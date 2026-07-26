@@ -1,25 +1,128 @@
+ChatGPT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sì, è lo stesso Tally.
+
+Nel sito ho usato:
+
+https://tally.so/embed/EkeqWA
+Il tuo link pubblico è:
+
+https://tally.so/r/EkeqWA
+L’ID EkeqWA coincide, quindi puntano allo stesso modulo. /r/ apre la pagina pubblica; /embed/ lo incorpora nel sito.
+
+
+ma lìinput audio non si vede
+
+Elaborato per 25s
+Nel modulo pubblico attuale compaiono soltanto:
+
+caricamento di una foto;
+
+campo “raccontami qualcosa”;
+
+pulsante di invio. 
+
+Quindi il sito incorpora correttamente l’ultima versione pubblicata di Tally. L’input audio va aggiunto nell’editor del modulo:
+
+Apri il modulo EkeqWA su Tally.
+
+Sotto al campo della foto scrivi /file.
+
+Seleziona File upload.
+
+Scrivi come titolo: Registrazione audio.
+
+Apri le impostazioni del blocco.
+
+Limita i tipi di file agli audio files.
+
+Premi Publish.
+
+Ricarica il sito GitHub Pages.
+
+Tally permette di raccogliere file audio attraverso il blocco File Upload; il piano gratuito accetta file fino a 10 MB. 
+
+Il comando /audio serve invece a inserire nel modulo un audio da ascoltare. Per ricevere un audio dall’utente serve /file. 
+
+
+l'html è fatto male e nonsi vede il subit del tally e non sembr amolto adatto alla visione modbile
+
+Elaborato per 36s
+snail_garden_mobile_tally_fix.html
+
+Correzioni principali:
+
+Tally usa altezza dinamica con fallback da 1000px, così compare anche Invia.
+
+Il modulo scorre nel flusso naturale della pagina.
+
+La camera cresce insieme al contenuto Tally.
+
+Layout mobile dedicato per schermi da 320–760 px.
+
+Foglie spostate sui bordi del form, lontano dai campi.
+
+Gallerie e form occupano sezioni separate.
+
+Il cursore-formica si attiva soltanto su dispositivi con mouse.
+
+Su telefono resta il normale controllo touch.
+
+Rinomina il file in:
+
+index.html
+e sostituiscilo nel repository GitHub Pages. 
+
+
+
+Libreria
+/
+snail_garden_mobile_tally_fix.html
+
+
+
+
 <!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#2f2017" />
-  <title>Snail Garden — Tunnel delle formiche</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2f2118" />
+  <title>Snail Garden — Invia la tua foto</title>
 
   <style>
     :root {
-      --soil-1: #2f2017;
-      --soil-2: #402a1c;
-      --soil-3: #563822;
-      --tunnel-edge: #8b6038;
-      --tunnel: #d8b47d;
-      --tunnel-light: #efd4a8;
-      --ink: #2b1d14;
-      --cream: #fff8e8;
-      --leaf-1: #315f3a;
-      --leaf-2: #5e8c4c;
-      --leaf-3: #8caf63;
-      --shadow: rgba(22, 12, 7, .28);
+      --soil: #2f2118;
+      --soil-deep: #21150f;
+      --soil-light: #4d3322;
+      --sand: #d8b47d;
+      --sand-light: #efd3a5;
+      --sand-edge: #8d6139;
+      --cream: #fff9ec;
+      --ink: #2a1c14;
+      --leaf-dark: #315d39;
+      --leaf: #5f8b4d;
+      --leaf-light: #91b56b;
+      --shadow: rgba(18, 10, 6, .30);
     }
 
     * {
@@ -33,26 +136,19 @@
     body {
       margin: 0;
       min-width: 320px;
-      min-height: 100vh;
-      overflow-x: hidden;
       color: var(--cream);
-      font-family:
-        Inter, ui-rounded, "SF Pro Rounded", system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 15% 12%, rgba(255,255,255,.055) 0 2px, transparent 3px),
-        radial-gradient(circle at 84% 22%, rgba(255,255,255,.04) 0 1px, transparent 2px),
-        radial-gradient(circle at 55% 78%, rgba(0,0,0,.11) 0 2px, transparent 3px),
-        linear-gradient(150deg, var(--soil-2), var(--soil-1) 48%, #251810);
-      background-size: 74px 74px, 92px 92px, 110px 110px, auto;
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,.05) 0 2px, transparent 3px),
+        radial-gradient(circle at 82% 26%, rgba(255,255,255,.035) 0 1px, transparent 2px),
+        radial-gradient(circle at 56% 82%, rgba(0,0,0,.14) 0 2px, transparent 3px),
+        linear-gradient(145deg, var(--soil-light), var(--soil) 42%, var(--soil-deep));
+      background-size: 78px 78px, 105px 105px, 126px 126px, auto;
+      overflow-x: hidden;
     }
 
-    body.pointer-mode {
-      cursor: none;
-    }
-
-    button,
     a,
+    button,
     input,
     textarea,
     select,
@@ -63,178 +159,142 @@
     .page {
       position: relative;
       min-height: 100vh;
-      isolation: isolate;
-      overflow: hidden;
+      overflow: clip;
     }
 
-    .topbar {
-      position: relative;
-      z-index: 20;
+    .hero {
       width: min(980px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 34px 0 12px;
+      padding: max(28px, env(safe-area-inset-top)) 0 14px;
       text-align: center;
     }
 
-    .eyebrow {
+    .badge {
       display: inline-flex;
-      gap: 8px;
       align-items: center;
-      margin-bottom: 12px;
+      gap: 9px;
       padding: 8px 13px;
-      border: 1px solid rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.13);
       border-radius: 999px;
-      background: rgba(255,255,255,.055);
-      font-size: .76rem;
-      font-weight: 800;
-      letter-spacing: .14em;
+      background: rgba(255,255,255,.05);
+      font-size: .75rem;
+      font-weight: 850;
+      letter-spacing: .13em;
       text-transform: uppercase;
       backdrop-filter: blur(8px);
     }
 
-    .eyebrow::before {
+    .badge::before {
       content: "";
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #93bb6b;
-      box-shadow: 0 0 0 5px rgba(147,187,107,.12);
+      background: var(--leaf-light);
+      box-shadow: 0 0 0 5px rgba(145,181,107,.12);
     }
 
     h1 {
-      max-width: 850px;
-      margin: 0 auto;
+      max-width: 860px;
+      margin: 16px auto 0;
       font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(2.7rem, 8vw, 6.8rem);
+      font-size: clamp(2.75rem, 8.2vw, 6.7rem);
       font-weight: 500;
-      line-height: .88;
+      line-height: .9;
       letter-spacing: -.055em;
       text-wrap: balance;
     }
 
-    .intro {
-      max-width: 590px;
+    .hero p {
+      max-width: 610px;
       margin: 18px auto 0;
-      color: rgba(255,248,232,.72);
-      font-size: clamp(.96rem, 2.1vw, 1.14rem);
+      color: rgba(255,249,236,.72);
+      font-size: clamp(.96rem, 2.2vw, 1.12rem);
       line-height: 1.55;
       text-wrap: balance;
     }
 
-    .world {
+    /* AREA GALLERIE: altezza autonoma, separata dal form */
+    .tunnel-zone {
       position: relative;
-      z-index: 2;
-      width: min(1180px, calc(100% - 20px));
-      min-height: 1130px;
-      margin: 4px auto 0;
+      width: min(1180px, calc(100% - 16px));
+      height: clamp(380px, 48vw, 560px);
+      margin: 6px auto 18px;
     }
 
-    .soil-glow {
+    .tunnel-map {
       position: absolute;
-      z-index: -2;
       inset: 0;
-      border-radius: 48px;
-      background:
-        radial-gradient(circle at 48% 60%, rgba(225,178,111,.08), transparent 30%),
-        radial-gradient(circle at 14% 35%, rgba(255,255,255,.025), transparent 22%),
-        radial-gradient(circle at 88% 40%, rgba(0,0,0,.12), transparent 24%);
-    }
-
-    .tunnels {
-      position: absolute;
-      z-index: 1;
-      inset: 10px 0 auto;
       width: 100%;
-      height: 670px;
+      height: 100%;
       overflow: visible;
-      filter: drop-shadow(0 16px 18px rgba(21,12,7,.23));
+      filter: drop-shadow(0 16px 18px rgba(18,10,6,.25));
     }
 
-    .tunnel-underlay,
-    .tunnel-fill {
+    .tunnel-edge,
+    .tunnel-fill,
+    .tunnel-shine {
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    .tunnel-underlay {
-      stroke: var(--tunnel-edge);
+    .tunnel-edge {
+      stroke: var(--sand-edge);
       stroke-width: 92;
     }
 
     .tunnel-fill {
-      stroke: var(--tunnel);
+      stroke: var(--sand);
       stroke-width: 68;
     }
 
-    .tunnel-highlight {
-      fill: none;
-      stroke: rgba(255,255,255,.13);
+    .tunnel-shine {
+      stroke: rgba(255,255,255,.14);
       stroke-width: 4;
-      stroke-linecap: round;
-      stroke-dasharray: 1 17;
+      stroke-dasharray: 1 18;
     }
 
-    .chamber-edge {
-      fill: var(--tunnel-edge);
+    .room-edge {
+      fill: var(--sand-edge);
     }
 
-    .chamber-fill {
-      fill: var(--tunnel);
-    }
-
-    .chamber-shine {
-      fill: none;
-      stroke: rgba(255,255,255,.15);
-      stroke-width: 4;
-      stroke-dasharray: 2 16;
-      stroke-linecap: round;
+    .room-fill {
+      fill: var(--sand);
     }
 
     .entrance {
       position: absolute;
-      z-index: 6;
-      left: 4.7%;
-      top: 108px;
+      z-index: 5;
+      left: 4%;
+      top: 20%;
       display: grid;
-      width: 118px;
-      height: 78px;
+      width: 112px;
+      height: 72px;
       place-items: center;
-      border: 8px solid var(--tunnel-edge);
+      border: 8px solid var(--sand-edge);
       border-radius: 50%;
       color: var(--ink);
-      background:
-        radial-gradient(circle at 48% 42%, var(--tunnel-light), var(--tunnel) 70%);
-      box-shadow:
-        0 12px 28px var(--shadow),
-        inset 0 1px 0 rgba(255,255,255,.34);
-      font-size: .8rem;
-      font-weight: 950;
+      background: radial-gradient(circle at 42% 36%, var(--sand-light), var(--sand) 70%);
+      box-shadow: 0 12px 28px var(--shadow);
+      font-size: .74rem;
+      font-weight: 900;
       letter-spacing: .12em;
       transform: rotate(-7deg);
     }
 
-    .entrance small {
-      display: block;
-      margin-top: -12px;
-      font-size: .55rem;
-      letter-spacing: .06em;
-      opacity: .66;
-    }
-
     .hint {
       position: absolute;
-      z-index: 8;
-      top: 42px;
+      z-index: 5;
+      top: 5%;
       right: 2%;
       max-width: 260px;
-      padding: 14px 17px;
+      padding: 13px 16px;
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      color: rgba(255,248,232,.76);
-      background: rgba(27,17,11,.48);
-      box-shadow: 0 12px 30px rgba(0,0,0,.14);
-      font-size: .88rem;
+      border-radius: 17px;
+      color: rgba(255,249,236,.77);
+      background: rgba(26,16,10,.48);
+      box-shadow: 0 12px 28px rgba(0,0,0,.12);
+      font-size: .86rem;
       line-height: 1.45;
       backdrop-filter: blur(10px);
     }
@@ -243,12 +303,137 @@
       color: var(--cream);
     }
 
+    /* FORM NEL FLUSSO DELLA PAGINA: niente top assoluti e niente tagli */
+    .form-section {
+      position: relative;
+      z-index: 10;
+      width: min(790px, calc(100% - 20px));
+      margin: 0 auto 58px;
+      padding: clamp(26px, 5vw, 50px);
+      border: 10px solid var(--sand-edge);
+      border-radius: 76px 76px 62px 62px / 54px 54px 68px 68px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 22% 13%, rgba(255,255,255,.34), transparent 24%),
+        linear-gradient(145deg, #e8ca97, var(--sand) 56%, #cda36d);
+      box-shadow:
+        0 30px 75px rgba(18,10,6,.35),
+        inset 0 2px 0 rgba(255,255,255,.32);
+    }
+
+    .form-heading {
+      max-width: 620px;
+      margin: 0 auto 24px;
+      text-align: center;
+    }
+
+    .form-heading .kicker {
+      display: block;
+      margin-bottom: 8px;
+      color: #65462d;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .form-heading h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 6vw, 4.1rem);
+      font-weight: 500;
+      line-height: .95;
+      letter-spacing: -.045em;
+      text-wrap: balance;
+    }
+
+    .form-heading p {
+      max-width: 540px;
+      margin: 13px auto 0;
+      color: rgba(42,28,20,.7);
+      line-height: 1.5;
+    }
+
+    .leaf-frame {
+      position: relative;
+      padding: clamp(14px, 3vw, 26px);
+      border: 1px solid rgba(49,93,57,.18);
+      border-radius: 34px;
+      background:
+        linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.76)),
+        repeating-linear-gradient(112deg, rgba(49,93,57,.07) 0 2px, transparent 2px 16px);
+      box-shadow:
+        0 20px 46px rgba(57,36,19,.16),
+        inset 0 0 0 8px rgba(255,255,255,.23);
+      overflow: visible;
+    }
+
+    /* NESSUN overflow:hidden: il contenuto Tally può crescere */
+    .tally-container {
+      position: relative;
+      z-index: 4;
+      width: 100%;
+      overflow: visible;
+      border-radius: 24px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 10px 25px rgba(53,36,23,.08);
+    }
+
+    .tally-container iframe {
+      display: block;
+      width: 100%;
+      min-height: 760px;
+      border: 0;
+      border-radius: 24px;
+      background: transparent;
+    }
+
+    .leaf {
+      position: absolute;
+      z-index: 5;
+      width: 48px;
+      height: 25px;
+      border-radius: 100% 0 100% 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.22), transparent 35%),
+        linear-gradient(135deg, var(--leaf-light), var(--leaf-dark));
+      box-shadow: 0 6px 13px rgba(38,69,37,.20);
+      transform: rotate(var(--r, 0deg));
+      transform-origin: 0 100%;
+      pointer-events: none;
+    }
+
+    .leaf::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 4px;
+      top: 50%;
+      height: 1px;
+      background: rgba(255,255,255,.35);
+      transform: rotate(-12deg);
+      transform-origin: left;
+    }
+
+    .l1 { top: -11px; left: 6%; --r: -22deg; }
+    .l2 { top: 18%; left: -11px; --r: 43deg; width: 42px; }
+    .l3 { top: 48%; left: -8px; --r: 20deg; }
+    .l4 { bottom: 8%; left: -5px; --r: 54deg; width: 40px; }
+    .l5 { bottom: -10px; left: 13%; --r: 30deg; }
+    .l6 { top: -10px; right: 8%; --r: 160deg; }
+    .l7 { top: 21%; right: -8px; --r: 120deg; width: 41px; }
+    .l8 { top: 51%; right: -11px; --r: 145deg; }
+    .l9 { bottom: 10%; right: -7px; --r: 112deg; width: 40px; }
+    .l10 { bottom: -9px; right: 14%; --r: 205deg; }
+
+    /* FORMICHE DECORATIVE NEL TERRENO */
     .soil-ant {
       position: absolute;
-      z-index: 0;
+      z-index: 1;
       width: 20px;
       height: 35px;
       opacity: .82;
+      pointer-events: none;
       filter: drop-shadow(0 3px 2px rgba(0,0,0,.18));
       animation-timing-function: linear;
       animation-iteration-count: infinite;
@@ -256,7 +441,10 @@
 
     .soil-ant::before,
     .soil-ant::after,
-    .soil-ant > span {
+    .soil-ant > span,
+    .cursor-ant::before,
+    .cursor-ant::after,
+    .cursor-ant > span {
       content: "";
       position: absolute;
       left: 50%;
@@ -265,19 +453,22 @@
       transform: translateX(-50%);
     }
 
-    .soil-ant::before {
+    .soil-ant::before,
+    .cursor-ant::before {
       top: 1px;
       width: 8px;
       height: 8px;
     }
 
-    .soil-ant > span {
+    .soil-ant > span,
+    .cursor-ant > span {
       top: 10px;
       width: 10px;
       height: 10px;
     }
 
-    .soil-ant::after {
+    .soil-ant::after,
+    .cursor-ant::after {
       top: 22px;
       width: 13px;
       height: 13px;
@@ -306,241 +497,44 @@
 
     .ant-a {
       left: 7%;
-      top: 430px;
-      animation-name: wander-a;
-      animation-duration: 16s;
+      top: 64%;
+      animation: wander-a 17s linear infinite;
     }
 
     .ant-b {
       right: 7%;
-      top: 280px;
-      animation-name: wander-b;
-      animation-duration: 19s;
-      animation-delay: -7s;
+      top: 49%;
+      animation: wander-b 20s linear -7s infinite;
     }
 
     .ant-c {
-      left: 14%;
-      top: 760px;
-      animation-name: wander-c;
-      animation-duration: 22s;
-      animation-delay: -4s;
-    }
-
-    .ant-d {
-      right: 13%;
-      top: 760px;
-      animation-name: wander-d;
-      animation-duration: 18s;
-      animation-delay: -11s;
-    }
-
-    .ant-e {
-      left: 47%;
-      top: 330px;
-      animation-name: wander-e;
-      animation-duration: 20s;
-      animation-delay: -3s;
+      left: 48%;
+      top: 15%;
+      animation: wander-c 19s linear -4s infinite;
     }
 
     @keyframes wander-a {
-      0%   { transform: translate(0, 0) rotate(15deg); }
-      25%  { transform: translate(80px, 45px) rotate(90deg); }
-      50%  { transform: translate(35px, 130px) rotate(165deg); }
-      75%  { transform: translate(-30px, 70px) rotate(245deg); }
-      100% { transform: translate(0, 0) rotate(375deg); }
+      0% { transform: translate(0,0) rotate(10deg); }
+      32% { transform: translate(80px,-35px) rotate(105deg); }
+      68% { transform: translate(35px,55px) rotate(235deg); }
+      100% { transform: translate(0,0) rotate(370deg); }
     }
 
     @keyframes wander-b {
-      0%   { transform: translate(0, 0) rotate(-25deg); }
-      30%  { transform: translate(-95px, 70px) rotate(-120deg); }
-      60%  { transform: translate(-35px, 150px) rotate(-205deg); }
-      100% { transform: translate(0, 0) rotate(-385deg); }
+      0% { transform: translate(0,0) rotate(-10deg); }
+      36% { transform: translate(-95px,45px) rotate(-130deg); }
+      72% { transform: translate(-40px,-35px) rotate(-250deg); }
+      100% { transform: translate(0,0) rotate(-370deg); }
     }
 
     @keyframes wander-c {
-      0%   { transform: translate(0, 0) rotate(40deg); }
-      35%  { transform: translate(120px, -55px) rotate(120deg); }
-      68%  { transform: translate(70px, 45px) rotate(235deg); }
-      100% { transform: translate(0, 0) rotate(400deg); }
+      0% { transform: translate(0,0) rotate(20deg); }
+      35% { transform: translate(60px,35px) rotate(120deg); }
+      70% { transform: translate(-45px,60px) rotate(250deg); }
+      100% { transform: translate(0,0) rotate(380deg); }
     }
 
-    @keyframes wander-d {
-      0%   { transform: translate(0, 0) rotate(-10deg); }
-      36%  { transform: translate(-120px, -40px) rotate(-135deg); }
-      72%  { transform: translate(-65px, 55px) rotate(-250deg); }
-      100% { transform: translate(0, 0) rotate(-370deg); }
-    }
-
-    @keyframes wander-e {
-      0%   { transform: translate(0, 0) rotate(15deg); }
-      25%  { transform: translate(65px, 35px) rotate(100deg); }
-      55%  { transform: translate(15px, 88px) rotate(195deg); }
-      78%  { transform: translate(-55px, 42px) rotate(285deg); }
-      100% { transform: translate(0, 0) rotate(375deg); }
-    }
-
-    .form-chamber {
-      position: absolute;
-      z-index: 10;
-      top: 590px;
-      left: 50%;
-      width: min(760px, calc(100% - 28px));
-      transform: translateX(-50%);
-      padding: clamp(28px, 5vw, 54px);
-      border: 11px solid var(--tunnel-edge);
-      border-radius: 43% 57% 47% 53% / 11% 12% 10% 13%;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 24% 18%, rgba(255,255,255,.3), transparent 25%),
-        linear-gradient(145deg, #e7c996, var(--tunnel) 54%, #cda36c);
-      box-shadow:
-        0 28px 70px rgba(19,10,5,.35),
-        inset 0 2px 0 rgba(255,255,255,.33);
-    }
-
-    .form-heading {
-      position: relative;
-      z-index: 3;
-      max-width: 600px;
-      margin: 0 auto 24px;
-      text-align: center;
-    }
-
-    .form-heading .mini {
-      display: block;
-      margin-bottom: 8px;
-      color: #5f432b;
-      font-size: .72rem;
-      font-weight: 900;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-    }
-
-    .form-heading h2 {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(2rem, 5.8vw, 4.2rem);
-      font-weight: 500;
-      line-height: .95;
-      letter-spacing: -.045em;
-      text-wrap: balance;
-    }
-
-    .form-heading p {
-      max-width: 520px;
-      margin: 14px auto 0;
-      color: rgba(43,29,20,.7);
-      line-height: 1.5;
-    }
-
-    .leaf-frame {
-      position: relative;
-      z-index: 2;
-      padding: clamp(16px, 3.3vw, 28px);
-      border: 1px solid rgba(71,92,48,.18);
-      border-radius: 34px;
-      background:
-        linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,.76)),
-        repeating-linear-gradient(
-          112deg,
-          rgba(58,102,55,.08) 0 2px,
-          transparent 2px 15px
-        );
-      box-shadow:
-        0 20px 45px rgba(60,38,20,.16),
-        inset 0 0 0 8px rgba(255,255,255,.25);
-    }
-
-    .tally-shell {
-      position: relative;
-      z-index: 3;
-      min-height: 283px;
-      overflow: hidden;
-      border-radius: 24px;
-      background: rgba(255,255,255,.88);
-    }
-
-    .tally-shell iframe {
-      display: block;
-      width: 100%;
-      border: 0;
-      border-radius: 24px;
-      background: transparent;
-    }
-
-    .leaf {
-      position: absolute;
-      z-index: 4;
-      width: 46px;
-      height: 24px;
-      border-radius: 100% 0 100% 0;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.22), transparent 35%),
-        linear-gradient(135deg, var(--leaf-3), var(--leaf-1));
-      box-shadow: 0 6px 12px rgba(41,73,40,.18);
-      transform: rotate(var(--r, 0deg));
-      transform-origin: 0 100%;
-      pointer-events: none;
-    }
-
-    .leaf::after {
-      content: "";
-      position: absolute;
-      left: 5px;
-      right: 4px;
-      top: 50%;
-      height: 1px;
-      background: rgba(255,255,255,.34);
-      transform: rotate(-12deg);
-      transform-origin: left;
-    }
-
-    .leaf.l1  { top: -10px; left: 5%; --r: -23deg; }
-    .leaf.l2  { top: 10px; left: 1%; --r: 18deg; width: 38px; }
-    .leaf.l3  { top: 31%; left: -10px; --r: 47deg; }
-    .leaf.l4  { top: 61%; left: -5px; --r: 23deg; width: 39px; }
-    .leaf.l5  { bottom: -7px; left: 11%; --r: 32deg; }
-    .leaf.l6  { top: -11px; right: 7%; --r: 157deg; }
-    .leaf.l7  { top: 18%; right: -7px; --r: 120deg; width: 40px; }
-    .leaf.l8  { top: 49%; right: -10px; --r: 142deg; }
-    .leaf.l9  { bottom: 8%; right: -4px; --r: 116deg; width: 37px; }
-    .leaf.l10 { bottom: -10px; right: 13%; --r: 205deg; }
-
-    .leaf.small {
-      width: 31px;
-      height: 17px;
-      opacity: .9;
-    }
-
-    .leaf.s1 { top: 11%; left: 7px; --r: -44deg; }
-    .leaf.s2 { bottom: 18%; left: 8px; --r: 58deg; }
-    .leaf.s3 { top: 6%; right: 16%; --r: 170deg; }
-    .leaf.s4 { bottom: 22%; right: 5px; --r: 137deg; }
-
-    .leaf-stem {
-      position: absolute;
-      z-index: 2;
-      width: 110px;
-      height: 110px;
-      border: solid rgba(49,95,58,.45);
-      border-width: 0 0 3px 3px;
-      border-radius: 0 0 0 100%;
-      pointer-events: none;
-    }
-
-    .leaf-stem.a {
-      top: -18px;
-      left: -10px;
-      transform: rotate(-9deg);
-    }
-
-    .leaf-stem.b {
-      right: -11px;
-      bottom: -16px;
-      transform: rotate(171deg);
-    }
-
+    /* CURSORE-FORMICA SOLO DESKTOP */
     .cursor-ant {
       position: fixed;
       z-index: 9999;
@@ -556,100 +550,37 @@
       will-change: transform;
     }
 
-    .cursor-ant::before,
-    .cursor-ant::after,
-    .cursor-ant > span {
-      content: "";
-      position: absolute;
-      left: 50%;
-      border-radius: 50%;
-      background: #17100b;
-      transform: translateX(-50%);
+    body.desktop-pointer {
+      cursor: none;
     }
 
-    .cursor-ant::before {
-      top: 1px;
-      width: 9px;
-      height: 9px;
-    }
-
-    .cursor-ant > span {
-      top: 11px;
-      width: 11px;
-      height: 11px;
-    }
-
-    .cursor-ant::after {
-      top: 24px;
-      width: 15px;
-      height: 14px;
-    }
-
-    .footer-note {
-      position: absolute;
-      z-index: 5;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      width: min(720px, calc(100% - 32px));
-      color: rgba(255,248,232,.46);
-      font-size: .78rem;
+    .footer {
+      width: min(760px, calc(100% - 32px));
+      margin: -24px auto 28px;
+      color: rgba(255,249,236,.48);
+      font-size: .79rem;
+      line-height: 1.45;
       text-align: center;
     }
 
-    @media (max-width: 820px) {
-      .topbar {
-        padding-top: 26px;
+    @media (max-width: 760px) {
+      .hero {
+        width: min(100% - 24px, 680px);
+        padding-top: 24px;
       }
 
-      .world {
-        min-height: 1210px;
-      }
-
-      .tunnels {
-        top: 72px;
-        height: 610px;
-      }
-
-      .entrance {
-        top: 154px;
-        left: 2%;
-        width: 94px;
-        height: 64px;
-        border-width: 7px;
-      }
-
-      .hint {
-        top: 76px;
-        right: 1%;
-        max-width: 195px;
-        font-size: .78rem;
-      }
-
-      .form-chamber {
-        top: 650px;
-        border-radius: 90px 90px 70px 70px / 55px 55px 70px 70px;
-      }
-
-      .soil-ant.ant-e {
-        display: none;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .world {
+      .tunnel-zone {
         width: 100%;
-        min-height: 1280px;
+        height: 430px;
+        margin-top: 0;
       }
 
-      .tunnels {
-        top: 100px;
-        left: -8%;
-        width: 116%;
-        height: 560px;
+      .tunnel-map {
+        left: -12%;
+        width: 124%;
       }
 
-      .tunnel-underlay {
+      .tunnel-edge {
         stroke-width: 82;
       }
 
@@ -658,25 +589,28 @@
       }
 
       .entrance {
-        top: 185px;
-        left: 7px;
-        width: 84px;
+        left: 8px;
+        top: 27%;
+        width: 86px;
         height: 58px;
-        font-size: .68rem;
+        border-width: 7px;
+        font-size: .65rem;
       }
 
       .hint {
-        top: 95px;
+        top: 4%;
         right: 12px;
-        max-width: 170px;
+        max-width: 185px;
         padding: 11px 12px;
+        font-size: .76rem;
       }
 
-      .form-chamber {
-        top: 690px;
-        width: calc(100% - 18px);
-        padding: 28px 15px 24px;
+      .form-section {
+        width: calc(100% - 14px);
+        margin-top: -6px;
+        padding: 28px 13px 22px;
         border-width: 8px;
+        border-radius: 54px 54px 42px 42px / 38px 38px 50px 50px;
       }
 
       .form-heading {
@@ -684,38 +618,65 @@
       }
 
       .form-heading p {
-        font-size: .9rem;
+        font-size: .91rem;
       }
 
       .leaf-frame {
-        padding: 15px 10px;
+        padding: 14px 8px;
         border-radius: 27px;
+        box-shadow:
+          0 16px 34px rgba(57,36,19,.14),
+          inset 0 0 0 5px rgba(255,255,255,.22);
       }
 
-      .tally-shell {
+      .tally-container,
+      .tally-container iframe {
         border-radius: 19px;
       }
 
-      .leaf {
-        transform: scale(.82) rotate(var(--r, 0deg));
+      .tally-container iframe {
+        min-height: 920px;
       }
 
-      .soil-ant.ant-b,
-      .soil-ant.ant-d {
-        opacity: .52;
+      .leaf {
+        width: 40px;
+        height: 21px;
       }
     }
 
-    @media (pointer: coarse) {
-      body.pointer-mode {
+    @media (max-width: 420px) {
+      .hero p {
+        max-width: 330px;
+      }
+
+      .tunnel-zone {
+        height: 390px;
+      }
+
+      .hint {
+        display: none;
+      }
+
+      .tally-container iframe {
+        min-height: 1000px;
+      }
+
+      .form-section {
+        width: calc(100% - 8px);
+        padding-inline: 9px;
+      }
+
+      .leaf-frame {
+        padding-inline: 5px;
+      }
+    }
+
+    @media (pointer: coarse), (hover: none) {
+      body.desktop-pointer {
         cursor: auto;
       }
 
       .cursor-ant {
-        display: none;
-      }
-
-      .hint {
         display: none;
       }
     }
@@ -724,9 +685,9 @@
       *,
       *::before,
       *::after {
-        scroll-behavior: auto !important;
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
@@ -734,127 +695,96 @@
 
 <body>
   <main class="page">
-    <header class="topbar">
-      <div class="eyebrow">Snail Garden</div>
+    <header class="hero">
+      <div class="badge">Snail Garden</div>
       <h1>Segui le gallerie</h1>
-      <p class="intro">
-        Porta la formica fino alla camera delle foglie e inviaci la tua foto.
-      </p>
+      <p>Porta la formica fino alla camera delle foglie e inviaci una foto, un audio o il tuo racconto.</p>
     </header>
 
-    <section class="world" id="world">
-      <div class="soil-glow" aria-hidden="true"></div>
-
-      <div class="entrance">
-        ENTRA
-        <small>da qui</small>
-      </div>
+    <section class="tunnel-zone" id="tunnel-zone" aria-label="Tunnel delle formiche">
+      <div class="entrance">ENTRA</div>
 
       <aside class="hint">
-        <strong>Muovi il mouse:</strong> la formica resta dentro alle gallerie e ti accompagna fino al form.
+        <strong>Muovi il mouse:</strong> la formica segue il centro delle gallerie.
       </aside>
 
-      <svg
-        class="tunnels"
-        viewBox="0 0 1180 670"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <!-- Tutti i bordi vengono disegnati prima: le giunzioni restano pulite. -->
+      <svg class="tunnel-map" viewBox="0 0 1180 560" preserveAspectRatio="none" aria-hidden="true">
+        <!-- Bordi disegnati insieme -->
         <g>
-          <path class="tunnel-underlay" d="M105 145 C205 112 246 206 338 195 C434 183 426 87 522 103 C635 123 602 247 720 239 C830 232 859 156 961 184 C1048 208 1044 302 954 337 C858 374 771 349 714 432 C672 493 660 526 652 577" />
-          <path class="tunnel-underlay" d="M338 195 C307 282 227 297 205 389" />
-          <path class="tunnel-underlay" d="M522 103 C526 188 481 252 451 334" />
-          <path class="tunnel-underlay" d="M720 239 C775 320 842 376 930 459" />
+          <path class="tunnel-edge" d="M100 155 C205 112 245 208 343 194 C438 180 431 89 528 105 C641 123 610 246 727 238 C841 230 867 153 972 183 C1061 208 1051 302 960 335 C861 371 771 347 712 426 C675 475 660 505 651 548" />
+          <path class="tunnel-edge" d="M343 194 C316 272 238 291 208 379" />
+          <path class="tunnel-edge" d="M528 105 C532 190 488 249 455 327" />
+          <path class="tunnel-edge" d="M727 238 C785 316 848 366 937 447" />
         </g>
 
         <!-- Camere esterne -->
         <g>
-          <ellipse class="chamber-edge" cx="196" cy="407" rx="84" ry="67" />
-          <ellipse class="chamber-edge" cx="438" cy="354" rx="88" ry="69" />
-          <ellipse class="chamber-edge" cx="953" cy="480" rx="91" ry="72" />
+          <ellipse class="room-edge" cx="198" cy="397" rx="82" ry="64" />
+          <ellipse class="room-edge" cx="442" cy="346" rx="86" ry="67" />
+          <ellipse class="room-edge" cx="958" cy="467" rx="90" ry="70" />
         </g>
 
-        <!-- Riempimento continuo dei tunnel -->
+        <!-- Riempimenti -->
         <g>
-          <path class="tunnel-fill mouse-path" id="main-path" d="M105 145 C205 112 246 206 338 195 C434 183 426 87 522 103 C635 123 602 247 720 239 C830 232 859 156 961 184 C1048 208 1044 302 954 337 C858 374 771 349 714 432 C672 493 660 526 652 577" />
-          <path class="tunnel-fill mouse-path" id="branch-left" d="M338 195 C307 282 227 297 205 389" />
-          <path class="tunnel-fill mouse-path" id="branch-center" d="M522 103 C526 188 481 252 451 334" />
-          <path class="tunnel-fill mouse-path" id="branch-right" d="M720 239 C775 320 842 376 930 459" />
+          <path class="tunnel-fill mouse-path" d="M100 155 C205 112 245 208 343 194 C438 180 431 89 528 105 C641 123 610 246 727 238 C841 230 867 153 972 183 C1061 208 1051 302 960 335 C861 371 771 347 712 426 C675 475 660 505 651 548" />
+          <path class="tunnel-fill mouse-path" d="M343 194 C316 272 238 291 208 379" />
+          <path class="tunnel-fill mouse-path" d="M528 105 C532 190 488 249 455 327" />
+          <path class="tunnel-fill mouse-path" d="M727 238 C785 316 848 366 937 447" />
         </g>
 
-        <!-- Camere interne: coprono gli estremi dei rami e rendono morbide le entrate. -->
+        <!-- Camere interne coprono le terminazioni -->
         <g>
-          <ellipse class="chamber-fill" cx="196" cy="407" rx="69" ry="52" />
-          <ellipse class="chamber-fill" cx="438" cy="354" rx="73" ry="54" />
-          <ellipse class="chamber-fill" cx="953" cy="480" rx="76" ry="57" />
+          <ellipse class="room-fill" cx="198" cy="397" rx="67" ry="49" />
+          <ellipse class="room-fill" cx="442" cy="346" rx="71" ry="52" />
+          <ellipse class="room-fill" cx="958" cy="467" rx="75" ry="55" />
         </g>
 
-        <!-- Piccoli riflessi uniformi -->
-        <g opacity=".7">
-          <path class="tunnel-highlight" d="M106 132 C208 101 245 193 337 182 C431 170 428 78 522 92" />
-          <path class="tunnel-highlight" d="M721 226 C831 220 861 143 963 171" />
-          <ellipse class="chamber-shine" cx="196" cy="407" rx="57" ry="42" />
-          <ellipse class="chamber-shine" cx="438" cy="354" rx="61" ry="44" />
-          <ellipse class="chamber-shine" cx="953" cy="480" rx="64" ry="47" />
-        </g>
+        <path class="tunnel-shine" d="M101 141 C207 101 246 194 342 181 C435 168 433 78 527 92" />
+        <path class="tunnel-shine" d="M729 225 C842 217 870 141 974 170" />
       </svg>
 
-      <!-- Formiche che camminano nella terra -->
       <span class="soil-ant ant-a" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
       <span class="soil-ant ant-b" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
       <span class="soil-ant ant-c" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-      <span class="soil-ant ant-d" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-      <span class="soil-ant ant-e" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-
-      <section class="form-chamber" id="form-chamber">
-        <header class="form-heading">
-          <span class="mini">La camera delle foglie</span>
-          <h2>Invia una foto a Snail Garden</h2>
-          <p>
-            Compila il modulo nella piccola serra sotterranea.
-          </p>
-        </header>
-
-        <div class="leaf-frame">
-          <span class="leaf-stem a" aria-hidden="true"></span>
-          <span class="leaf-stem b" aria-hidden="true"></span>
-
-          <i class="leaf l1" aria-hidden="true"></i>
-          <i class="leaf l2" aria-hidden="true"></i>
-          <i class="leaf l3" aria-hidden="true"></i>
-          <i class="leaf l4" aria-hidden="true"></i>
-          <i class="leaf l5" aria-hidden="true"></i>
-          <i class="leaf l6" aria-hidden="true"></i>
-          <i class="leaf l7" aria-hidden="true"></i>
-          <i class="leaf l8" aria-hidden="true"></i>
-          <i class="leaf l9" aria-hidden="true"></i>
-          <i class="leaf l10" aria-hidden="true"></i>
-
-          <i class="leaf small s1" aria-hidden="true"></i>
-          <i class="leaf small s2" aria-hidden="true"></i>
-          <i class="leaf small s3" aria-hidden="true"></i>
-          <i class="leaf small s4" aria-hidden="true"></i>
-
-          <div class="tally-shell">
-            <iframe
-              data-tally-src="https://tally.so/embed/EkeqWA?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-              loading="lazy"
-              width="100%"
-              height="283"
-              frameborder="0"
-              marginheight="0"
-              marginwidth="0"
-              title="Invia una foto a Snail Garden"
-            ></iframe>
-          </div>
-        </div>
-      </section>
-
-      <p class="footer-note">
-        Le foglie decorano il contenitore esterno del modulo Tally.
-      </p>
     </section>
+
+    <section class="form-section" id="form-section">
+      <header class="form-heading">
+        <span class="kicker">La camera delle foglie</span>
+        <h2>Invia qualcosa a Snail Garden</h2>
+        <p>Il modulo si adatta alla sua altezza completa, compreso il pulsante finale di invio.</p>
+      </header>
+
+      <div class="leaf-frame">
+        <i class="leaf l1" aria-hidden="true"></i>
+        <i class="leaf l2" aria-hidden="true"></i>
+        <i class="leaf l3" aria-hidden="true"></i>
+        <i class="leaf l4" aria-hidden="true"></i>
+        <i class="leaf l5" aria-hidden="true"></i>
+        <i class="leaf l6" aria-hidden="true"></i>
+        <i class="leaf l7" aria-hidden="true"></i>
+        <i class="leaf l8" aria-hidden="true"></i>
+        <i class="leaf l9" aria-hidden="true"></i>
+        <i class="leaf l10" aria-hidden="true"></i>
+
+        <div class="tally-container">
+          <iframe
+            data-tally-src="https://tally.so/embed/EkeqWA?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+            loading="eager"
+            width="100%"
+            height="1000"
+            frameborder="0"
+            marginheight="0"
+            marginwidth="0"
+            title="Invia una foto a Snail Garden"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">
+      Il form resta utilizzabile su telefono, tablet e desktop. Le foglie decorano i bordi senza coprire i campi.
+    </p>
   </main>
 
   <div class="cursor-ant" id="cursor-ant" aria-hidden="true">
@@ -862,91 +792,83 @@
   </div>
 
   <script>
-    // Caricamento ufficiale degli embed Tally.
-    var d = document,
-      w = "https://tally.so/widgets/embed.js",
-      v = function () {
-        if (typeof Tally !== "undefined") {
-          Tally.loadEmbeds();
-        } else {
-          d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function (e) {
-            e.src = e.dataset.tallySrc;
-          });
-        }
-      };
+    /* Embed Tally con altezza dinamica */
+    var d = document;
+    var w = "https://tally.so/widgets/embed.js";
+
+    var loadTally = function () {
+      if (typeof Tally !== "undefined") {
+        Tally.loadEmbeds();
+      } else {
+        d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function (iframe) {
+          iframe.src = iframe.dataset.tallySrc;
+        });
+      }
+    };
 
     if (typeof Tally !== "undefined") {
-      v();
+      loadTally();
     } else if (d.querySelector('script[src="' + w + '"]') === null) {
-      var s = d.createElement("script");
-      s.src = w;
-      s.onload = v;
-      s.onerror = v;
-      d.body.appendChild(s);
+      var script = d.createElement("script");
+      script.src = w;
+      script.async = true;
+      script.onload = loadTally;
+      script.onerror = loadTally;
+      d.body.appendChild(script);
     }
 
-    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    /* Cursore-formica vincolato ai tunnel, attivo soltanto con mouse */
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const cursorAnt = document.getElementById("cursor-ant");
-    const formChamber = document.getElementById("form-chamber");
-    const pathElements = [...document.querySelectorAll(".mouse-path")];
+    const formSection = document.getElementById("form-section");
+    const paths = [...document.querySelectorAll(".mouse-path")];
 
     let samples = [];
-    let previousPoint = null;
+    let previous = null;
 
-    if (canHover) {
-      document.body.classList.add("pointer-mode");
+    if (finePointer) {
+      document.body.classList.add("desktop-pointer");
     }
 
-    function rebuildPathSamples() {
+    function rebuildSamples() {
       samples = [];
 
-      pathElements.forEach((path) => {
+      paths.forEach(function (path) {
         const svg = path.ownerSVGElement;
         const matrix = svg.getScreenCTM();
 
         if (!matrix) return;
 
-        const total = path.getTotalLength();
+        const length = path.getTotalLength();
 
-        for (let distance = 0; distance <= total; distance += 4) {
+        for (let distance = 0; distance <= length; distance += 4) {
           const point = path.getPointAtLength(distance);
-          const screenPoint = new DOMPoint(point.x, point.y).matrixTransform(matrix);
+          const screen = new DOMPoint(point.x, point.y).matrixTransform(matrix);
 
-          samples.push({
-            x: screenPoint.x,
-            y: screenPoint.y
-          });
+          samples.push({ x: screen.x, y: screen.y });
         }
       });
-
-      if (!previousPoint && samples.length) {
-        previousPoint = samples[0];
-        moveCursorAnt(samples[0].x, samples[0].y);
-      }
     }
 
-    function getNearestTunnelPoint(x, y) {
-      let closest = null;
-      let closestSquaredDistance = Infinity;
+    function nearestPoint(x, y) {
+      let point = null;
+      let best = Infinity;
 
       for (const sample of samples) {
         const dx = sample.x - x;
         const dy = sample.y - y;
-        const squaredDistance = dx * dx + dy * dy;
+        const value = dx * dx + dy * dy;
 
-        if (squaredDistance < closestSquaredDistance) {
-          closestSquaredDistance = squaredDistance;
-          closest = sample;
+        if (value < best) {
+          best = value;
+          point = sample;
         }
       }
 
-      return {
-        point: closest,
-        distance: Math.sqrt(closestSquaredDistance)
-      };
+      return { point: point, distance: Math.sqrt(best) };
     }
 
-    function pointIsInside(element, x, y) {
+    function inside(element, x, y) {
       const rect = element.getBoundingClientRect();
 
       return (
@@ -957,42 +879,43 @@
       );
     }
 
-    function moveCursorAnt(x, y) {
-      const previous = previousPoint || { x, y };
-      const angle =
-        Math.atan2(y - previous.y, x - previous.x) * (180 / Math.PI) + 90;
+    function moveAnt(x, y) {
+      const start = previous || { x: x, y: y };
+      const angle = Math.atan2(y - start.y, x - start.x) * 180 / Math.PI + 90;
 
       cursorAnt.style.transform =
-        `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
+        "translate(" + x + "px," + y + "px) translate(-50%,-50%) rotate(" + angle + "deg)";
 
-      previousPoint = { x, y };
+      previous = { x: x, y: y };
     }
 
-    if (canHover) {
-      window.addEventListener("mousemove", (event) => {
-        if (pointIsInside(formChamber, event.clientX, event.clientY)) {
+    if (finePointer) {
+      window.addEventListener("mousemove", function (event) {
+        if (inside(formSection, event.clientX, event.clientY)) {
           cursorAnt.style.opacity = "0";
           return;
         }
 
-        const nearest = getNearestTunnelPoint(event.clientX, event.clientY);
+        const nearest = nearestPoint(event.clientX, event.clientY);
 
         if (nearest.point && nearest.distance <= 115) {
           cursorAnt.style.opacity = "1";
-          moveCursorAnt(nearest.point.x, nearest.point.y);
+          moveAnt(nearest.point.x, nearest.point.y);
+        } else {
+          cursorAnt.style.opacity = "0";
         }
       });
 
-      window.addEventListener("mouseleave", () => {
+      window.addEventListener("mouseleave", function () {
         cursorAnt.style.opacity = "0";
       });
     }
 
-    window.addEventListener("resize", rebuildPathSamples);
-    window.addEventListener("scroll", rebuildPathSamples, { passive: true });
-    window.addEventListener("load", rebuildPathSamples);
+    window.addEventListener("resize", rebuildSamples);
+    window.addEventListener("scroll", rebuildSamples, { passive: true });
+    window.addEventListener("load", rebuildSamples);
 
-    rebuildPathSamples();
+    rebuildSamples();
   </script>
 </body>
 </html>
