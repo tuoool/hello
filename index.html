@@ -2,60 +2,221 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Il mio primo sito</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Snail Garden</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f5f9;
-      color: #172033;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f0f5ed;
+      color: #243226;
+    }
+
+    header {
+      padding: 70px 20px;
+      background: #426b46;
+      color: white;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 15px;
+      font-size: 48px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 20px;
     }
 
     main {
       width: 90%;
-      max-width: 700px;
-      margin: 80px auto;
-      padding: 40px;
-      box-sizing: border-box;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.10);
-      text-align: center;
+      max-width: 800px;
+      margin: 40px auto;
     }
 
-    h1 {
-      color: #0969da;
+    .presentazione,
+    .contatti {
+      margin-bottom: 35px;
+      padding: 35px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #426b46;
     }
 
     p {
       font-size: 18px;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 12px 20px;
-      background: #0969da;
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 7px;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    input,
+    textarea {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #a8b8a8;
+      border-radius: 9px;
+      background: white;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 17px;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #426b46;
+      outline: 3px solid rgba(66, 107, 70, 0.18);
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px 20px;
+      border: 0;
+      border-radius: 9px;
+      background: #426b46;
       color: white;
-      text-decoration: none;
-      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #315234;
+    }
+
+    footer {
+      padding: 25px;
+      background: #243226;
+      color: white;
+      text-align: center;
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 50px 20px;
+      }
+
+      header h1 {
+        font-size: 36px;
+      }
+
+      .presentazione,
+      .contatti {
+        padding: 24px;
+      }
     }
   </style>
 </head>
 
 <body>
+  <header>
+    <h1>Snail Garden</h1>
+    <p>Benvenuto nel mio angolo verde</p>
+  </header>
+
   <main>
-    <h1>Benvenuto nel mio sito!</h1>
+    <section class="presentazione">
+      <h2>Chi sono</h2>
 
-    <p>
-      Questa è la mia prima pagina pubblicata gratuitamente con GitHub Pages.
-    </p>
+      <p>
+        Benvenuto nel mio sito. Qui puoi trovare informazioni
+        sul mio progetto e contattarmi direttamente.
+      </p>
+    </section>
 
-    <a href="mailto:tuoindirizzo@example.com">Scrivimi</a>
+    <section class="contatti">
+      <h2>Scrivimi un messaggio</h2>
+
+      <p>
+        Inserisci il tuo nome, la tua email e il messaggio.
+        Riceverò il contenuto nella mia casella email e nel
+        pannello Formspree.
+      </p>
+
+      <form
+        action="https://formspree.io/f/xvzedgor"
+        method="POST"
+      >
+        <label for="nome">Il tuo nome</label>
+
+        <input
+          id="nome"
+          name="nome"
+          type="text"
+          placeholder="Scrivi il tuo nome"
+          autocomplete="name"
+          required
+        >
+
+        <label for="email">La tua email</label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Scrivi la tua email"
+          autocomplete="email"
+          required
+        >
+
+        <label for="messaggio">Il tuo messaggio</label>
+
+        <textarea
+          id="messaggio"
+          name="messaggio"
+          placeholder="Scrivi qui il tuo messaggio"
+          required
+        ></textarea>
+
+        <input
+          type="hidden"
+          name="_subject"
+          value="Nuovo messaggio dal sito Snail Garden"
+        >
+
+        <button type="submit">
+          Invia il messaggio
+        </button>
+      </form>
+    </section>
   </main>
+
+  <footer>
+    <p>© 2026 Snail Garden</p>
+  </footer>
 </body>
 </html>
