@@ -28,7 +28,7 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    button, select { font: inherit; }
+    button, select, input { font: inherit; }
 
     #app {
       height: 100%;
@@ -82,7 +82,7 @@
       flex-wrap: wrap;
     }
 
-    button, select {
+    button, select, input {
       min-height: 36px;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -92,7 +92,8 @@
       cursor: pointer;
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
     }
-    button:hover, select:hover { border-color: rgba(255,255,255,.35); }
+    button:hover, select:hover, input:hover { border-color: rgba(255,255,255,.35); }
+    input[type=number] { width: 76px; cursor: text; }
     button:active { transform: translateY(1px); }
     button.primary { background: var(--accent); color: #171300; border-color: transparent; font-weight: 850; }
 
@@ -264,6 +265,58 @@
       #povGrid { grid-template-columns: 1fr; grid-template-rows: repeat(6, minmax(150px,1fr)); }
       .pov-card { overflow: auto; }
     }
+
+
+    .setup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: radial-gradient(circle at 50% 15%, rgba(42,82,123,.62), rgba(2,8,14,.93));
+      backdrop-filter: blur(12px);
+    }
+    .setup-overlay.hidden { display: none; }
+    .setup-panel {
+      width: min(560px, 100%);
+      padding: 26px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(19,36,58,.98), rgba(7,17,31,.98));
+      box-shadow: 0 30px 100px rgba(0,0,0,.5);
+    }
+    .setup-panel h2 { margin: 0 0 8px; font-size: clamp(24px,5vw,36px); }
+    .setup-panel > p { margin: 0 0 22px; color: var(--muted); line-height: 1.5; }
+    .setup-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .setup-field {
+      display: grid;
+      gap: 7px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .setup-field input, .setup-field select { width: 100%; }
+    .setup-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .realism-note {
+      margin-top: 16px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(73,227,139,.08);
+      border: 1px solid rgba(73,227,139,.2);
+      color: #c9f9dd;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    @media (max-width: 620px) {
+      .setup-grid { grid-template-columns: 1fr; }
+      .setup-panel { padding: 18px; }
+    }
+
   </style>
 </head>
 <body>
@@ -282,8 +335,13 @@
     </div>
 
     <div class="controls">
+      <label class="select-label">Persone
+        <input id="peopleCountInput" type="number" min="12" max="100" step="1" value="50" aria-label="Numero di persone nella partita">
+      </label>
       <label class="select-label">POV
         <select id="povCountSelect" aria-label="Numero di visuali">
+          <option value="3">3</option>
+          <option value="4">4</option>
           <option value="5">5</option>
           <option value="6" selected>6</option>
         </select>
@@ -296,16 +354,17 @@
         </select>
       </label>
       <button id="freezeBtn">Blocca scena</button>
+      <button id="settingsBtn">Imposta partita</button>
       <button id="newRoundBtn" class="primary">Nuovo round</button>
     </div>
   </header>
 
   <main class="workspace">
     <section class="main-card">
-      <canvas id="mainCanvas" aria-label="Piazza con cinquanta personaggi"></canvas>
+      <canvas id="mainCanvas" aria-label="Piazza tridimensionale con personaggi"></canvas>
       <div id="message">Seleziona un riquadro POV, poi clicca una persona numerata.</div>
       <div class="main-hint">
-        <strong>Comandi:</strong> trascina per ruotare la telecamera, usa la rotellina per zoomare. I numeri identificano le 50 persone. I punti di riferimento colorati aiutano a ricostruire la posizione di chi sta guardando.
+        <strong>Comandi:</strong> trascina per ruotare la telecamera, usa la rotellina per zoomare. I numeri identificano tutte le persone presenti. I punti di riferimento colorati aiutano a ricostruire la posizione di chi sta guardando.
       </div>
     </section>
 
@@ -319,6 +378,31 @@
   </main>
 </div>
 
+
+<div id="setupOverlay" class="setup-overlay">
+  <section class="setup-panel" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">Imposta la partita</h2>
+    <p>Scegli la densità della piazza e quante visuali dagli occhi vuoi riconoscere.</p>
+    <div class="setup-grid">
+      <label class="setup-field">Persone nella piazza
+        <input id="setupPeopleCount" type="number" min="12" max="100" step="1" value="50">
+      </label>
+      <label class="setup-field">Visuali POV
+        <select id="setupPovCount">
+          <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6" selected>6</option>
+        </select>
+      </label>
+      <label class="setup-field">Andatura
+        <select id="setupDifficulty">
+          <option value="0.55">Calma</option><option value="1" selected>Normale</option><option value="1.55">Affollata</option>
+        </select>
+      </label>
+    </div>
+    <div class="realism-note">Scala fisica: piazza di 50 × 50 metri, persone alte circa 1,58–1,91 m, occhi alla corretta altezza e campo visivo prospettico coerente con il formato di ogni riquadro.</div>
+    <div class="setup-actions"><button id="startGameBtn" class="primary">Avvia partita</button></div>
+  </section>
+</div>
+
 <script>
 (() => {
   'use strict';
@@ -326,14 +410,15 @@
   const TEST_MODE = new URLSearchParams(location.search).has('test');
   const TAU = Math.PI * 2;
   const WORLD = 25;
-  const PEOPLE_COUNT = 50;
+  const MIN_PEOPLE = 12;
+  const MAX_PEOPLE = 100;
   const COLORS = [
     '#ff5f6d','#ffd166','#06d6a0','#4cc9f0','#9b5de5',
     '#f15bb5','#fca311','#8ac926','#00bbf9','#e76f51',
     '#c77dff','#70e000','#ff8fab','#48cae4','#fb8500'
   ];
   const SKINS = ['#f5c7a9','#dca57a','#b97850','#8d5524','#6f3f27','#ffd2b8'];
-  const HATS = ['none','cap','cone','halo','square'];
+  const HATS = ['none','none','cap','beanie','brim'];
   const GESTURES = ['walk','wave','jump','spin','crouch'];
 
   const mainCanvas = document.getElementById('mainCanvas');
@@ -349,6 +434,13 @@
   const newRoundBtn = document.getElementById('newRoundBtn');
   const povCountSelect = document.getElementById('povCountSelect');
   const difficultySelect = document.getElementById('difficultySelect');
+  const peopleCountInput = document.getElementById('peopleCountInput');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const setupOverlay = document.getElementById('setupOverlay');
+  const setupPeopleCount = document.getElementById('setupPeopleCount');
+  const setupPovCount = document.getElementById('setupPovCount');
+  const setupDifficulty = document.getElementById('setupDifficulty');
+  const startGameBtn = document.getElementById('startGameBtn');
 
   const panelLetters = ['A','B','C','D','E','F'];
   const panels = [];
@@ -371,6 +463,7 @@
 
   const state = {
     people: [],
+    peopleCount: 50,
     landmarks: [],
     round: 0,
     score: 0,
@@ -381,7 +474,7 @@
     roundSeconds: 0,
     lastTime: performance.now(),
     picks: [],
-    camera: { yaw: 0.08, pitch: 0.62, distance: 49, target: {x:0,y:0,z:0} },
+    camera: { yaw: 0.08, pitch: 0.55, distance: 52, target: {x:0,y:0,z:0} },
     drag: { active:false, moved:false, x:0, y:0 },
     messageTimer: 0,
     audio: null
@@ -454,7 +547,14 @@
       goalZ: rand(-WORLD+2, WORLD-2),
       heading: rand(0,TAU),
       viewHeading: 0,
-      speed: rand(.75,1.4),
+      speed: rand(.82,1.48),
+      height: rand(1.58,1.91),
+      shoulderScale: rand(.88,1.12),
+      bodyScale: rand(.88,1.13),
+      hair: choose(['#17120f','#34251d','#5b3a24','#8a5a32','#d3b37b','#23252b']),
+      hairStyle: Math.floor(rand(0,4)),
+      shoes: choose(['#15191f','#eceff2','#6c432e','#253552']),
+      turnSpeed: rand(1.6,2.5),
       shirt: COLORS[id % COLORS.length],
       pants: id % 3 === 0 ? '#24324b' : (id % 3 === 1 ? '#394a5f' : '#4c3a50'),
       skin: SKINS[id % SKINS.length],
@@ -471,7 +571,43 @@
   }
 
   function resetPeople() {
-    state.people = Array.from({length:PEOPLE_COUNT}, (_,i)=>spawnPerson(i+1));
+    state.people = Array.from({length:state.peopleCount}, (_,i)=>spawnPerson(i+1));
+    separateInitialSpawns();
+  }
+
+  function separateInitialSpawns() {
+    for (let pass=0; pass<7; pass++) {
+      for (let i=0; i<state.people.length; i++) {
+        const a=state.people[i];
+        for (let j=i+1; j<state.people.length; j++) {
+          const b=state.people[j];
+          let dx=a.x-b.x, dz=a.z-b.z;
+          let d=Math.hypot(dx,dz);
+          if (d<0.72) {
+            if (d<.001) { dx=rand(-1,1); dz=rand(-1,1); d=Math.hypot(dx,dz); }
+            const push=(0.72-d)*.52;
+            dx/=d; dz/=d;
+            a.x=clamp(a.x+dx*push,-WORLD+1,WORLD-1); a.z=clamp(a.z+dz*push,-WORLD+1,WORLD-1);
+            b.x=clamp(b.x-dx*push,-WORLD+1,WORLD-1); b.z=clamp(b.z-dz*push,-WORLD+1,WORLD-1);
+          }
+        }
+      }
+    }
+  }
+
+  function applyGameSettings(peopleCount, povCount, speed) {
+    state.peopleCount = clamp(Math.round(Number(peopleCount) || 50), MIN_PEOPLE, MAX_PEOPLE);
+    state.povCount = clamp(Math.round(Number(povCount) || 6), 3, Math.min(6,state.peopleCount));
+    state.speedMultiplier = Number(speed) || 1;
+    peopleCountInput.value = String(state.peopleCount);
+    povCountSelect.value = String(state.povCount);
+    difficultySelect.value = String(state.speedMultiplier);
+    setupPeopleCount.value = String(state.peopleCount);
+    setupPovCount.value = String(state.povCount);
+    setupDifficulty.value = String(state.speedMultiplier);
+    state.score = 0; state.round = 0; state.frozen = false; freezeBtn.textContent='Blocca scena';
+    resetPeople();
+    startRound();
   }
 
   function startRound() {
@@ -481,7 +617,16 @@
     state.messageTimer = 0;
     state.people.forEach(p => { p.target=false; p.solved=false; });
     const ids = shuffled(state.people.map(p=>p.id)).slice(0,state.povCount);
-    ids.forEach(id => state.people[id-1].target = true);
+    const focusPoints=[{x:0,z:0},{x:0,z:18},{x:-12,z:-3},{x:12,z:5},{x:0,z:-17},{x:-7,z:9}];
+    ids.forEach((id,i)=>{
+      const person=state.people[id-1],focus=focusPoints[i%focusPoints.length];
+      person.target=true;
+      person.goalX=clamp(focus.x+rand(-2.2,2.2),-WORLD+2,WORLD-2);
+      person.goalZ=clamp(focus.z+rand(-2.2,2.2),-WORLD+2,WORLD-2);
+      person.heading=Math.atan2(person.goalX-person.x,person.goalZ-person.z);
+      person.viewHeading=person.heading;
+    });
+    povGrid.style.gridTemplateRows=state.povCount<=4?'repeat(2,minmax(0,1fr))':'repeat(3,minmax(0,1fr))';
     panels.forEach((panel,i) => {
       panel.targetId = i < state.povCount ? ids[i] : -1;
       panel.solved = false;
@@ -581,66 +726,74 @@
 
   function updatePeople(dt) {
     const speedMul = state.speedMultiplier;
-    for (const p of state.people) {
+    const avoid = state.people.map(()=>({x:0,z:0}));
+    for (let i=0;i<state.people.length;i++) {
+      const a=state.people[i];
+      for (let j=i+1;j<state.people.length;j++) {
+        const b=state.people[j];
+        const dx=a.x-b.x,dz=a.z-b.z,d=Math.hypot(dx,dz);
+        if (d>0 && d<1.35) {
+          const force=(1.35-d)/1.35;
+          const nx=dx/d,nz=dz/d;
+          avoid[i].x+=nx*force; avoid[i].z+=nz*force;
+          avoid[j].x-=nx*force; avoid[j].z-=nz*force;
+        }
+      }
+    }
+    for (let i=0;i<state.people.length;i++) {
+      const p=state.people[i];
       p.gestureTimer -= dt;
       if (p.gestureTimer <= 0) {
         p.gesture = choose(GESTURES);
-        p.gestureTimer = p.gesture === 'walk' ? rand(1.8,4) : rand(1,2.4);
+        p.gestureTimer = p.gesture === 'walk' ? rand(2.2,5.2) : rand(1.2,2.8);
         p.gesturePhase = 0;
       }
-      p.gesturePhase += dt * (p.gesture === 'spin' ? 4.6 : 2.7);
-
-      const dx = p.goalX-p.x, dz = p.goalZ-p.z;
-      const dist = Math.hypot(dx,dz);
-      if (dist < 1 || Math.random() < .0006) {
-        p.goalX = rand(-WORLD+2, WORLD-2);
-        p.goalZ = rand(-WORLD+2, WORLD-2);
+      p.gesturePhase += dt * (p.gesture === 'spin' ? 3.4 : 2.45);
+      let dx=p.goalX-p.x, dz=p.goalZ-p.z;
+      const dist=Math.hypot(dx,dz);
+      if (dist<1.2 || Math.random()<.00045) {
+        p.goalX=rand(-WORLD+2,WORLD-2); p.goalZ=rand(-WORLD+2,WORLD-2);
+        dx=p.goalX-p.x; dz=p.goalZ-p.z;
       }
-      const desired = Math.atan2(dx,dz);
-      p.heading += clamp(angleDiff(p.heading,desired), -dt*2.2, dt*2.2);
-      const moveScale = p.gesture === 'crouch' ? .35 : (p.gesture === 'jump' ? .75 : 1);
-      const step = p.speed * speedMul * moveScale * dt;
-      p.x += Math.sin(p.heading)*step;
-      p.z += Math.cos(p.heading)*step;
-      p.x = clamp(p.x,-WORLD+1,WORLD-1);
-      p.z = clamp(p.z,-WORLD+1,WORLD-1);
-      p.walkPhase += step*6.5;
-      p.stride = Math.sin(p.walkPhase);
-      p.viewHeading = p.heading + (p.gesture === 'spin' ? p.gesturePhase*.75 : Math.sin(p.walkPhase*.5)*.025);
+      const desired=Math.atan2(dx+avoid[i].x*4.2,dz+avoid[i].z*4.2);
+      p.heading += clamp(angleDiff(p.heading,desired),-dt*p.turnSpeed,dt*p.turnSpeed);
+      const moveScale=p.gesture==='crouch'?.22:(p.gesture==='jump'?.48:(p.gesture==='wave'?.58:1));
+      const crowdSlow=clamp(1-Math.hypot(avoid[i].x,avoid[i].z)*.23,.48,1);
+      const step=p.speed*speedMul*moveScale*crowdSlow*dt;
+      p.x+=Math.sin(p.heading)*step+avoid[i].x*dt*.34;
+      p.z+=Math.cos(p.heading)*step+avoid[i].z*dt*.34;
+      p.x=clamp(p.x,-WORLD+1,WORLD-1); p.z=clamp(p.z,-WORLD+1,WORLD-1);
+      p.walkPhase+=step*(5.6/p.height);
+      p.stride=Math.sin(p.walkPhase);
+      const glance=Math.sin(p.walkPhase*.28+p.id)*.055;
+      p.viewHeading=p.heading+(p.gesture==='spin'?p.gesturePhase*.62:glance);
     }
   }
 
-  function buildCamera(pos, target, fovDeg, viewportW) {
-    const forward = normalize3({x:target.x-pos.x,y:target.y-pos.y,z:target.z-pos.z});
-    let right = normalize3(cross3(forward,{x:0,y:1,z:0}));
-    if (hypot3(right.x,right.y,right.z) < .01) right = {x:1,y:0,z:0};
-    const up = normalize3(cross3(right,forward));
-    return {
-      pos, forward, right, up,
-      focal: viewportW/(2*Math.tan((fovDeg*Math.PI/180)/2)),
-      near: .08
-    };
+  function buildCamera(pos, target, verticalFovDeg, viewportW, viewportH) {
+    const forward=normalize3({x:target.x-pos.x,y:target.y-pos.y,z:target.z-pos.z});
+    let right=normalize3(cross3(forward,{x:0,y:1,z:0}));
+    if(hypot3(right.x,right.y,right.z)<.01) right={x:1,y:0,z:0};
+    const up=normalize3(cross3(right,forward));
+    const focal=viewportH/(2*Math.tan((verticalFovDeg*Math.PI/180)/2));
+    return {pos,forward,right,up,focal,near:.06,viewportW,viewportH,verticalFovDeg};
   }
 
-  function mainCamera(w) {
-    const c = state.camera;
-    const cp = Math.cos(c.pitch);
-    const pos = {
-      x: c.target.x + Math.sin(c.yaw)*cp*c.distance,
-      y: c.target.y + Math.sin(c.pitch)*c.distance,
-      z: c.target.z + Math.cos(c.yaw)*cp*c.distance
-    };
-    return buildCamera(pos,{x:0,y:1.3,z:0},50,w);
+  function mainCamera(w,h) {
+    const c=state.camera,cp=Math.cos(c.pitch);
+    const pos={x:c.target.x+Math.sin(c.yaw)*cp*c.distance,y:c.target.y+Math.sin(c.pitch)*c.distance,z:c.target.z+Math.cos(c.yaw)*cp*c.distance};
+    return buildCamera(pos,{x:0,y:1.05,z:0},43,w,h);
   }
 
-  function povCamera(person,w) {
-    const bob = Math.sin(person.walkPhase*2)*.025;
-    const jump = person.gesture === 'jump' ? Math.max(0,Math.sin(person.gesturePhase*Math.PI))*0.48 : 0;
-    const crouch = person.gesture === 'crouch' ? .35 : 0;
-    const pos = {x:person.x,y:1.64+bob+jump-crouch,z:person.z};
-    const h = person.viewHeading;
-    const target = {x:pos.x+Math.sin(h)*10,y:pos.y-.02,z:pos.z+Math.cos(h)*10};
-    return buildCamera(pos,target,76,w);
+  function povCamera(person,w,h) {
+    const bob=Math.sin(person.walkPhase*2)*.012;
+    const jump=person.gesture==='jump'?Math.max(0,Math.sin(person.gesturePhase*Math.PI))*.34:0;
+    const crouch=person.gesture==='crouch'?person.height*.18:0;
+    const eyeHeight=person.height*.925;
+    const pos={x:person.x,y:eyeHeight+bob+jump-crouch,z:person.z};
+    const heading=person.viewHeading;
+    const target={x:pos.x+Math.sin(heading)*20,y:pos.y-.012,z:pos.z+Math.cos(heading)*20};
+    return buildCamera(pos,target,58,w,h);
   }
 
   function cameraSpace(cam,p) {
@@ -672,49 +825,46 @@
   }
 
   function drawFloor(ctx,cam,w,h,isPov) {
-    if (!isPov) {
-      const bg = ctx.createLinearGradient(0,0,0,h);
-      bg.addColorStop(0,'#b9d8f3');
-      bg.addColorStop(.48,'#d7e6ef');
-      bg.addColorStop(.49,'#93a58f');
-      bg.addColorStop(1,'#52675a');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0,0,w,h);
-    } else {
-      const sky = ctx.createLinearGradient(0,0,0,h*.55);
-      sky.addColorStop(0,'#77b7ef');
-      sky.addColorStop(1,'#dcecf8');
-      ctx.fillStyle=sky; ctx.fillRect(0,0,w,h*.55);
-      const ground = ctx.createLinearGradient(0,h*.43,0,h);
-      ground.addColorStop(0,'#899d86');
-      ground.addColorStop(1,'#405346');
-      ctx.fillStyle=ground; ctx.fillRect(0,h*.43,w,h*.57);
-      ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(0,h*.49,w,1);
-    }
+    const far=1800;
+    const horizontal=normalize3({x:cam.forward.x,y:0,z:cam.forward.z});
+    const horizonPoint=project(cam,{x:cam.pos.x+horizontal.x*far,y:cam.pos.y,z:cam.pos.z+horizontal.z*far},w,h);
+    const horizon=clamp(horizonPoint?.y ?? h*.48,-h*.2,h*1.1);
+    const sky=ctx.createLinearGradient(0,0,0,Math.max(1,horizon));
+    sky.addColorStop(0,isPov?'#75add9':'#8eb7d7');
+    sky.addColorStop(1,isPov?'#d9e5e8':'#e3e8e5');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,w,Math.max(0,horizon));
+    const ground=ctx.createLinearGradient(0,horizon,0,h);
+    ground.addColorStop(0,'#8d9186'); ground.addColorStop(.42,'#777c72'); ground.addColorStop(1,'#555b53');
+    ctx.fillStyle=ground; ctx.fillRect(0,horizon,w,h-horizon);
 
-    ctx.save();
-    ctx.lineWidth = 1;
-    for (let v=-WORLD; v<=WORLD; v+=5) {
-      const major = v % 10 === 0;
-      ctx.strokeStyle = major ? 'rgba(235,248,255,.26)' : 'rgba(235,248,255,.13)';
-      const lx = projectedLine(cam,{x:v,y:0,z:-WORLD},{x:v,y:0,z:WORLD},w,h);
-      const lz = projectedLine(cam,{x:-WORLD,y:0,z:v},{x:WORLD,y:0,z:v},w,h);
-      for (const line of [lx,lz]) if (line) {
+    // Real perspective grid: every line is projected on the same 50 x 50 metre ground plane.
+    ctx.save(); ctx.lineWidth=1;
+    for(let v=-WORLD;v<=WORLD;v+=2.5){
+      const major=Math.abs(v%10)<.01;
+      ctx.strokeStyle=major?'rgba(239,240,230,.30)':'rgba(239,240,230,.13)';
+      const lines=[
+        projectedLine(cam,{x:v,y:.006,z:-WORLD},{x:v,y:.006,z:WORLD},w,h),
+        projectedLine(cam,{x:-WORLD,y:.006,z:v},{x:WORLD,y:.006,z:v},w,h)
+      ];
+      for(const line of lines) if(line){
         ctx.beginPath(); ctx.moveTo(line.a.x,line.a.y); ctx.lineTo(line.b.x,line.b.y); ctx.stroke();
       }
     }
-    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2;
-    const edges = [
-      [{x:-WORLD,y:0,z:-WORLD},{x:WORLD,y:0,z:-WORLD}],
-      [{x:WORLD,y:0,z:-WORLD},{x:WORLD,y:0,z:WORLD}],
-      [{x:WORLD,y:0,z:WORLD},{x:-WORLD,y:0,z:WORLD}],
-      [{x:-WORLD,y:0,z:WORLD},{x:-WORLD,y:0,z:-WORLD}]
+    ctx.strokeStyle='rgba(255,255,255,.52)'; ctx.lineWidth=2;
+    const edges=[
+      [{x:-WORLD,y:.01,z:-WORLD},{x:WORLD,y:.01,z:-WORLD}],
+      [{x:WORLD,y:.01,z:-WORLD},{x:WORLD,y:.01,z:WORLD}],
+      [{x:WORLD,y:.01,z:WORLD},{x:-WORLD,y:.01,z:WORLD}],
+      [{x:-WORLD,y:.01,z:WORLD},{x:-WORLD,y:.01,z:-WORLD}]
     ];
-    edges.forEach(e=>{
-      const line=projectedLine(cam,e[0],e[1],w,h);
-      if(line){ctx.beginPath();ctx.moveTo(line.a.x,line.a.y);ctx.lineTo(line.b.x,line.b.y);ctx.stroke();}
-    });
+    edges.forEach(e=>{const line=projectedLine(cam,e[0],e[1],w,h);if(line){ctx.beginPath();ctx.moveTo(line.a.x,line.a.y);ctx.lineTo(line.b.x,line.b.y);ctx.stroke();}});
     ctx.restore();
+
+    if(isPov){
+      const haze=ctx.createLinearGradient(0,horizon-20,0,horizon+70);
+      haze.addColorStop(0,'rgba(255,255,255,.12)'); haze.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=haze; ctx.fillRect(0,horizon-20,w,90);
+    }
   }
 
   function shade(hex, amount) {
@@ -803,80 +953,136 @@
   }
 
   function poseFor(p) {
-    const h = p.viewHeading || p.heading;
-    const side={x:Math.cos(h),z:-Math.sin(h)};
-    const fwd={x:Math.sin(h),z:Math.cos(h)};
-    const jump=p.gesture==='jump'?Math.max(0,Math.sin(p.gesturePhase*Math.PI))*0.48:0;
-    const crouch = p.gesture === 'crouch' ? .34 : 0;
-    const baseY=jump;
-    const hipY=.82-crouch+baseY, shoulderY=1.34-crouch+baseY, headY=1.72-crouch+baseY;
-    const stride=p.stride*.18;
+    const h=p.viewHeading||p.heading;
+    const side={x:Math.cos(h),z:-Math.sin(h)},fwd={x:Math.sin(h),z:Math.cos(h)};
+    const H=p.height;
+    const jump=p.gesture==='jump'?Math.max(0,Math.sin(p.gesturePhase*Math.PI))*H*.18:0;
+    const crouch=p.gesture==='crouch'?H*.18:0;
+    const baseY=jump, hipY=H*.47-crouch+baseY, shoulderY=H*.76-crouch+baseY, headY=H*.93-crouch+baseY;
+    const shoulder=H*.125*p.shoulderScale, hip=H*.065*p.bodyScale, stride=p.stride*H*.105;
     const P=(sx,y,sz)=>({x:p.x+sx,y,z:p.z+sz});
-    const hipL=P(side.x*.12,hipY,side.z*.12), hipR=P(-side.x*.12,hipY,-side.z*.12);
-    const shoulderL=P(side.x*.23,shoulderY,side.z*.23), shoulderR=P(-side.x*.23,shoulderY,-side.z*.23);
-    const footL=P(side.x*.1+fwd.x*stride,baseY,side.z*.1+fwd.z*stride);
-    const footR=P(-side.x*.1-fwd.x*stride,baseY,-side.z*.1-fwd.z*stride);
-    let handL=P(side.x*.42+fwd.x*(-stride*.4),.9-crouch+baseY,side.z*.42+fwd.z*(-stride*.4));
-    let handR=P(-side.x*.42+fwd.x*(stride*.4),.9-crouch+baseY,-side.z*.42+fwd.z*(stride*.4));
-    if(p.gesture==='wave'){
-      handR=P(-side.x*.46+fwd.x*.05,1.78+Math.sin(p.gesturePhase*5)*.12+baseY,-side.z*.46+fwd.z*.05);
-    }
-    return {baseY,hipL,hipR,shoulderL,shoulderR,footL,footR,handL,handR,head:P(0,headY,0),torso:P(0,1.08-crouch+baseY,0)};
+    const hipL=P(side.x*hip,hipY,side.z*hip),hipR=P(-side.x*hip,hipY,-side.z*hip);
+    const shoulderL=P(side.x*shoulder,shoulderY,side.z*shoulder),shoulderR=P(-side.x*shoulder,shoulderY,-side.z*shoulder);
+    const footL=P(side.x*hip+fwd.x*stride,baseY,side.z*hip+fwd.z*stride);
+    const footR=P(-side.x*hip-fwd.x*stride,baseY,-side.z*hip-fwd.z*stride);
+    let handL=P(side.x*H*.22+fwd.x*(-stride*.42),H*.50-crouch+baseY,side.z*H*.22+fwd.z*(-stride*.42));
+    let handR=P(-side.x*H*.22+fwd.x*(stride*.42),H*.50-crouch+baseY,-side.z*H*.22+fwd.z*(stride*.42));
+    if(p.gesture==='wave') handR=P(-side.x*H*.24+fwd.x*.04,H*.96+Math.sin(p.gesturePhase*5)*H*.05+baseY,-side.z*H*.24+fwd.z*.04);
+    return {baseY,hipL,hipR,shoulderL,shoulderR,footL,footR,handL,handR,head:P(0,headY,0),torso:P(0,H*.61-crouch+baseY,0),neck:P(0,H*.83-crouch+baseY,0)};
   }
 
   function drawPerson(ctx,cam,w,h,p,showId,isMain) {
-    const pose=poseFor(p);
-    const pts={};
+    const pose=poseFor(p),pts={};
     for(const [k,v] of Object.entries(pose)) if(typeof v==='object') pts[k]=project(cam,v,w,h);
-    if(!pts.head||!pts.torso||!pts.footL||!pts.footR)return null;
-    const height=Math.abs(((pts.footL.y+pts.footR.y)/2)-pts.head.y);
-    if(height<2 || height>800)return null;
-    const line=clamp(height*.13,1.2,18);
-    const headR=clamp(height*.11,1.6,18);
-    const foot=project(cam,{x:p.x,y:0,z:p.z},w,h);
-    if(foot){
-      ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(foot.x,foot.y,headR*1.1,headR*.34,0,0,TAU);ctx.fill();
-    }
-    const limb=(a,b,color,width=line*.58)=>{
-      if(!a||!b)return;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    };
-    limb(pts.hipL,pts.footL,p.pants);limb(pts.hipR,pts.footR,p.pants);
-    limb(pts.shoulderL,pts.handL,p.skin,line*.42);limb(pts.shoulderR,pts.handR,p.skin,line*.42);
-    limb(pts.shoulderL,pts.hipL,p.shirt,line);limb(pts.shoulderR,pts.hipR,p.shirt,line);
-    limb(pts.shoulderL,pts.shoulderR,p.shirt,line*.9);
-    ctx.fillStyle=p.skin;ctx.beginPath();ctx.arc(pts.head.x,pts.head.y,headR,0,TAU);ctx.fill();
-    ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=Math.max(1,headR*.12);ctx.stroke();
+    if(!pts.head||!pts.torso||!pts.footL||!pts.footR||!pts.shoulderL||!pts.shoulderR||!pts.hipL||!pts.hipR)return null;
+    const groundY=(pts.footL.y+pts.footR.y)/2;
+    const height=Math.abs(groundY-pts.head.y);
+    if(height<2||height>900)return null;
+    const depth=pts.torso.z;
+    const atmospheric=clamp(1-Math.max(0,depth-38)/95,.42,1);
+    const line=clamp(height*.105,1.15,16),headR=clamp(height*.105,1.5,19);
+    const foot=project(cam,{x:p.x,y:.012,z:p.z},w,h);
+    const shadowTip=project(cam,{x:p.x+.48,y:.012,z:p.z+.34},w,h);
 
-    // Hat shapes provide visual variety without revealing the POV owner's own appearance.
+    ctx.save();
+    ctx.globalAlpha=atmospheric;
+    if(foot){
+      const shadowAngle=shadowTip?Math.atan2(shadowTip.y-foot.y,shadowTip.x-foot.x):0;
+      ctx.save();ctx.translate(foot.x,foot.y);ctx.rotate(shadowAngle);
+      ctx.fillStyle=`rgba(10,14,16,${clamp(.30-depth*.002,.10,.28)})`;
+      ctx.beginPath();ctx.ellipse(headR*.35,0,headR*1.55,headR*.34,0,0,TAU);ctx.fill();ctx.restore();
+    }
+
+    const limb=(a,b,color,width=line*.50)=>{
+      if(!a||!b)return;
+      ctx.strokeStyle='rgba(20,24,28,.22)';ctx.lineWidth=width+Math.max(1,width*.18);ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(a.x+width*.08,a.y+width*.08);ctx.lineTo(b.x+width*.08,b.y+width*.08);ctx.stroke();
+      ctx.strokeStyle=color;ctx.lineWidth=width;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    };
+    const mid=(a,b,t=.52)=>({x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),z:lerp(a.z,b.z,t)});
+
+    // Legs and shoes.
+    limb(pts.hipL,pts.footL,shade(p.pants,-10),line*.58);
+    limb(pts.hipR,pts.footR,p.pants,line*.58);
+    const shoeLen=Math.max(2,line*.82);
+    ctx.strokeStyle=p.shoes;ctx.lineCap='round';ctx.lineWidth=Math.max(1.5,line*.42);
+    for(const fp of [pts.footL,pts.footR]){ctx.beginPath();ctx.moveTo(fp.x-shoeLen*.18,fp.y);ctx.lineTo(fp.x+shoeLen*.58,fp.y+shoeLen*.08);ctx.stroke();}
+
+    // Torso as a projected quadrilateral, keeping shoulder and hip proportions in perspective.
+    ctx.beginPath();ctx.moveTo(pts.shoulderL.x,pts.shoulderL.y);ctx.lineTo(pts.shoulderR.x,pts.shoulderR.y);
+    ctx.lineTo(pts.hipR.x,pts.hipR.y);ctx.lineTo(pts.hipL.x,pts.hipL.y);ctx.closePath();
+    ctx.fillStyle=p.shirt;ctx.fill();ctx.strokeStyle='rgba(18,24,30,.34)';ctx.lineWidth=Math.max(1,line*.09);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pts.shoulderR.x,pts.shoulderR.y);ctx.lineTo(pts.hipR.x,pts.hipR.y);ctx.lineTo(pts.hipL.x,pts.hipL.y);ctx.closePath();
+    ctx.fillStyle='rgba(0,0,0,.10)';ctx.fill();
+
+    // Sleeves, forearms and hands.
+    for(const [shoulder,hand] of [[pts.shoulderL,pts.handL],[pts.shoulderR,pts.handR]]){
+      if(!shoulder||!hand)continue;
+      const elbow=mid(shoulder,hand,.47);
+      limb(shoulder,elbow,shade(p.shirt,-5),line*.52);
+      limb(elbow,hand,p.skin,line*.35);
+      ctx.fillStyle=p.skin;ctx.beginPath();ctx.arc(hand.x,hand.y,Math.max(1.1,line*.22),0,TAU);ctx.fill();
+    }
+
+    // Neck and head.
+    if(pts.neck) limb(pts.neck,pts.head,p.skin,line*.38);
+    const faceGrad=ctx.createRadialGradient(pts.head.x-headR*.28,pts.head.y-headR*.35,headR*.12,pts.head.x,pts.head.y,headR);
+    faceGrad.addColorStop(0,shade(p.skin,20));faceGrad.addColorStop(1,shade(p.skin,-7));
+    ctx.fillStyle=faceGrad;ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y,headR*.86,headR,0,0,TAU);ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.28)';ctx.lineWidth=Math.max(1,headR*.09);ctx.stroke();
+
+    // Projected gaze direction gives faces a readable orientation.
+    const fh=p.viewHeading||p.heading;
+    const noseWorld={x:p.x+Math.sin(fh)*p.height*.075,y:pose.head.y,z:p.z+Math.cos(fh)*p.height*.075};
+    const nose=project(cam,noseWorld,w,h);
+    if(nose){
+      const vx=nose.x-pts.head.x,vy=nose.y-pts.head.y,vl=Math.hypot(vx,vy)||1;
+      const nx=vx/vl,ny=vy/vl,sideX=-ny,sideY=nx;
+      const facing=clamp(vl/(headR*.95),0,1);
+      ctx.strokeStyle='rgba(55,34,28,.72)';ctx.lineWidth=Math.max(1,headR*.075);ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(pts.head.x+nx*headR*.05,pts.head.y+ny*headR*.05);ctx.lineTo(pts.head.x+nx*headR*.58,pts.head.y+ny*headR*.58);ctx.stroke();
+      if(headR>4){
+        ctx.fillStyle='rgba(35,30,28,.78)';
+        for(const sgn of [-1,1]){ctx.beginPath();ctx.arc(pts.head.x+nx*headR*.18+sideX*headR*.25*sgn*facing,pts.head.y+ny*headR*.18+sideY*headR*.25*sgn*facing,Math.max(.7,headR*.055),0,TAU);ctx.fill();}
+      }
+    }
+
+    // Hair volume follows the skull rather than floating above it.
+    ctx.fillStyle=p.hair;
+    if(p.hairStyle===0){ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.28,headR*.88,Math.PI,TAU);ctx.fill();}
+    else if(p.hairStyle===1){ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*.30,headR*.90,headR*.61,0,Math.PI,TAU);ctx.fill();}
+    else if(p.hairStyle===2){ctx.beginPath();ctx.roundRect(pts.head.x-headR*.78,pts.head.y-headR*.96,headR*1.56,headR*.59,headR*.18);ctx.fill();}
+    else {ctx.beginPath();ctx.arc(pts.head.x-headR*.34,pts.head.y-headR*.61,headR*.49,0,TAU);ctx.arc(pts.head.x+headR*.34,pts.head.y-headR*.61,headR*.49,0,TAU);ctx.fill();}
+
     ctx.fillStyle=p.hatColor;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=Math.max(1,headR*.1);
     if(p.hat==='cap'){
       ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.55,headR*.88,Math.PI,TAU);ctx.fill();
       ctx.fillRect(pts.head.x,pts.head.y-headR*.64,headR*1.25,headR*.2);
-    } else if(p.hat==='cone'){
-      ctx.beginPath();ctx.moveTo(pts.head.x,pts.head.y-headR*2.1);ctx.lineTo(pts.head.x-headR*.85,pts.head.y-headR*.55);ctx.lineTo(pts.head.x+headR*.85,pts.head.y-headR*.55);ctx.closePath();ctx.fill();ctx.stroke();
-    } else if(p.hat==='halo'){
-      ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*1.55,headR*.9,headR*.28,0,0,TAU);ctx.strokeStyle=p.hatColor;ctx.lineWidth=Math.max(1,headR*.22);ctx.stroke();
-    } else if(p.hat==='square'){
-      ctx.fillRect(pts.head.x-headR*.72,pts.head.y-headR*1.55,headR*1.44,headR*.65);
+    }else if(p.hat==='beanie'){
+      ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.48,headR*.82,Math.PI,TAU);ctx.lineTo(pts.head.x+headR*.82,pts.head.y-headR*.38);ctx.lineTo(pts.head.x-headR*.82,pts.head.y-headR*.38);ctx.closePath();ctx.fill();
+      ctx.fillRect(pts.head.x-headR*.84,pts.head.y-headR*.48,headR*1.68,headR*.20);
+    }else if(p.hat==='brim'){
+      ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*.72,headR*1.18,headR*.24,0,0,TAU);ctx.fill();
+      ctx.fillRect(pts.head.x-headR*.58,pts.head.y-headR*1.42,headR*1.16,headR*.70);
     }
 
     if(showId){
-      const y=pts.head.y-headR*2.35;
-      const label=String(p.id);
-      ctx.font=`900 ${clamp(height*.12,9,16)}px system-ui`;
-      ctx.textAlign='center';ctx.textBaseline='middle';
+      const y=pts.head.y-headR*2.35,label=String(p.id);
+      ctx.globalAlpha=1;ctx.font=`900 ${clamp(height*.12,9,16)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';
       const tw=ctx.measureText(label).width;
-      const bg = p.solved ? 'rgba(29,140,84,.92)' : (p.target && state.frozen ? 'rgba(25,39,55,.9)' : 'rgba(3,9,15,.82)');
+      const bg=p.solved?'rgba(29,140,84,.94)':'rgba(3,9,15,.86)';
       ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(pts.head.x-tw/2-5,y-8,tw+10,16,7);ctx.fill();
       ctx.fillStyle=p.solved?'#bfffd8':'#fff';ctx.fillText(label,pts.head.x,y+.2);
       if(p.solved){ctx.strokeStyle='#49e38b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pts.head.x,pts.head.y,headR*1.65,0,TAU);ctx.stroke();}
     }
-    return {x:pts.torso.x,y:pts.torso.y,r:Math.max(10,height*.35),depth:pts.torso.z,id:p.id};
+    ctx.restore();
+    return {x:pts.torso.x,y:pts.torso.y,r:Math.max(10,height*.34),depth,id:p.id};
   }
 
   function renderMain() {
     const {w,h}=resizeCanvas(mainCanvas,mainCtx);
-    const cam=mainCamera(w);
+    const cam=mainCamera(w,h);
     drawFloor(mainCtx,cam,w,h,false);
 
     const drawables=[];
@@ -914,7 +1120,7 @@
     const {w,h}=resizeCanvas(panel.canvas,panel.ctx);
     const ctx=panel.ctx;
     const person=state.people[panel.targetId-1];
-    const cam=povCamera(person,w);
+    const cam=povCamera(person,w,h);
     drawFloor(ctx,cam,w,h,true);
 
     const drawables=[];
@@ -933,12 +1139,10 @@
       else drawPerson(ctx,cam,w,h,d.obj,false,false);
     }
 
-    // Simple binocular eye mask and crosshair reinforce the eye-view concept.
-    const vignette=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.22,w/2,h/2,Math.max(w,h)*.72);
-    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.52)');
+    // Subtle peripheral falloff approximates human peripheral vision while preserving geometry.
+    const vignette=ctx.createRadialGradient(w/2,h*.48,Math.min(w,h)*.28,w/2,h*.48,Math.max(w,h)*.78);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(.72,'rgba(0,0,0,.03)');vignette.addColorStop(1,'rgba(0,0,0,.34)');
     ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(w/2-7,h/2);ctx.lineTo(w/2+7,h/2);ctx.moveTo(w/2,h/2-7);ctx.lineTo(w/2,h/2+7);ctx.stroke();
     if(panel.solved){
       ctx.fillStyle='rgba(20,95,56,.26)';ctx.fillRect(0,0,w,h);
       ctx.fillStyle='#d5ffe5';ctx.font=`900 ${Math.max(16,w*.06)}px system-ui`;ctx.textAlign='center';ctx.fillText(`PERSONA ${panel.targetId}`,w/2,h/2);
@@ -1004,17 +1208,29 @@
   });
   newRoundBtn.addEventListener('click',()=>{ensureAudio();startRound();});
   povCountSelect.addEventListener('change',()=>{
-    state.povCount=Number(povCountSelect.value);
+    state.povCount=clamp(Number(povCountSelect.value),3,Math.min(6,state.people.length));
+    setupPovCount.value=String(state.povCount);
     startRound();
+  });
+  peopleCountInput.addEventListener('change',()=>{
+    applyGameSettings(peopleCountInput.value,state.povCount,state.speedMultiplier);
   });
   difficultySelect.addEventListener('change',()=>{
     state.speedMultiplier=Number(difficultySelect.value);
+    setupDifficulty.value=String(state.speedMultiplier);
     showMessage(`Velocità impostata: ${difficultySelect.options[difficultySelect.selectedIndex].text}.`,'');
+  });
+  settingsBtn.addEventListener('click',()=>{
+    setupPeopleCount.value=String(state.peopleCount); setupPovCount.value=String(state.povCount); setupDifficulty.value=String(state.speedMultiplier);
+    setupOverlay.classList.remove('hidden');
+  });
+  startGameBtn.addEventListener('click',()=>{
+    applyGameSettings(setupPeopleCount.value,setupPovCount.value,setupDifficulty.value);
+    setupOverlay.classList.add('hidden');
   });
 
   state.landmarks=createLandmarks();
-  resetPeople();
-  startRound();
+  applyGameSettings(50,6,1);
   requestAnimationFrame(tick);
 })();
 </script>
