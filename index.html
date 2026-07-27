@@ -1,818 +1,1022 @@
-!doctype html>
+<!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#2f2118" />
-  <title>Snail Garden — Invia la tua foto</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Di chi sono questi occhi?</title>
   <style>
     :root {
-      --soil: #2f2118;
-      --soil-deep: #21150f;
-      --soil-light: #4d3322;
-      --sand: #d8b47d;
-      --sand-light: #efd3a5;
-      --sand-edge: #8d6139;
-      --cream: #fff9ec;
-      --ink: #2a1c14;
-      --leaf-dark: #315d39;
-      --leaf: #5f8b4d;
-      --leaf-light: #91b56b;
-      --shadow: rgba(18, 10, 6, .30);
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #0d1a2a;
+      --panel-2: #13243a;
+      --text: #edf6ff;
+      --muted: #9db0c7;
+      --accent: #ffd84a;
+      --good: #49e38b;
+      --bad: #ff5d75;
+      --line: rgba(255,255,255,.14);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
-      min-width: 320px;
-      color: var(--cream);
-      font-family: Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 12% 18%, rgba(255,255,255,.05) 0 2px, transparent 3px),
-        radial-gradient(circle at 82% 26%, rgba(255,255,255,.035) 0 1px, transparent 2px),
-        radial-gradient(circle at 56% 82%, rgba(0,0,0,.14) 0 2px, transparent 3px),
-        linear-gradient(145deg, var(--soil-light), var(--soil) 42%, var(--soil-deep));
-      background-size: 78px 78px, 105px 105px, 126px 126px, auto;
-      overflow-x: hidden;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% -20%, #17365e, var(--bg) 58%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    a,
-    button,
-    input,
-    textarea,
-    select,
-    iframe {
-      cursor: auto;
+    button, select { font: inherit; }
+
+    #app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
     }
 
-    .page {
-      position: relative;
-      min-height: 100vh;
-      overflow: clip;
-    }
-
-    .hero {
-      width: min(980px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: max(28px, env(safe-area-inset-top)) 0 14px;
-      text-align: center;
-    }
-
-    .badge {
-      display: inline-flex;
+    .topbar {
+      min-height: 60px;
+      display: flex;
       align-items: center;
-      gap: 9px;
-      padding: 8px 13px;
-      border: 1px solid rgba(255,255,255,.13);
+      gap: 12px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(7, 17, 31, .82);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 16px 50px rgba(0,0,0,.25);
+    }
+
+    .title-wrap { min-width: 245px; }
+    h1 { margin: 0; font-size: clamp(17px, 2vw, 24px); line-height: 1.05; }
+    .subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
       border-radius: 999px;
       background: rgba(255,255,255,.05);
-      font-size: .75rem;
-      font-weight: 850;
-      letter-spacing: .13em;
-      text-transform: uppercase;
-      backdrop-filter: blur(8px);
+      padding: 7px 10px;
+      font-weight: 750;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .pill span { color: var(--accent); }
+
+    .controls {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+      flex-wrap: wrap;
     }
 
-    .badge::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--leaf-light);
-      box-shadow: 0 0 0 5px rgba(145,181,107,.12);
+    button, select {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--panel-2);
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    button:hover, select:hover { border-color: rgba(255,255,255,.35); }
+    button:active { transform: translateY(1px); }
+    button.primary { background: var(--accent); color: #171300; border-color: transparent; font-weight: 850; }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(420px, 1fr) minmax(330px, 42vw);
+      gap: 10px;
     }
 
-    h1 {
-      max-width: 860px;
-      margin: 16px auto 0;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(2.75rem, 8.2vw, 6.7rem);
-      font-weight: 500;
-      line-height: .9;
-      letter-spacing: -.055em;
-      text-wrap: balance;
-    }
-
-    .hero p {
-      max-width: 610px;
-      margin: 18px auto 0;
-      color: rgba(255,249,236,.72);
-      font-size: clamp(.96rem, 2.2vw, 1.12rem);
-      line-height: 1.55;
-      text-wrap: balance;
-    }
-
-    /* AREA GALLERIE: altezza autonoma, separata dal form */
-    .tunnel-zone {
+    .main-card, .pov-card {
       position: relative;
-      width: min(1180px, calc(100% - 16px));
-      height: clamp(380px, 48vw, 560px);
-      margin: 6px auto 18px;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #07111f;
+      box-shadow: 0 18px 60px rgba(0,0,0,.28);
     }
 
-    .tunnel-map {
-      position: absolute;
-      inset: 0;
+    #mainCanvas {
+      display: block;
       width: 100%;
       height: 100%;
-      overflow: visible;
-      filter: drop-shadow(0 16px 18px rgba(18,10,6,.25));
+      touch-action: none;
+      cursor: grab;
     }
+    #mainCanvas.dragging { cursor: grabbing; }
 
-    .tunnel-edge,
-    .tunnel-fill,
-    .tunnel-shine {
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .tunnel-edge {
-      stroke: var(--sand-edge);
-      stroke-width: 92;
-    }
-
-    .tunnel-fill {
-      stroke: var(--sand);
-      stroke-width: 68;
-    }
-
-    .tunnel-shine {
-      stroke: rgba(255,255,255,.14);
-      stroke-width: 4;
-      stroke-dasharray: 1 18;
-    }
-
-    .room-edge {
-      fill: var(--sand-edge);
-    }
-
-    .room-fill {
-      fill: var(--sand);
-    }
-
-    .entrance {
+    .main-hint {
       position: absolute;
-      z-index: 5;
-      left: 4%;
-      top: 20%;
-      display: grid;
-      width: 112px;
-      height: 72px;
-      place-items: center;
-      border: 8px solid var(--sand-edge);
-      border-radius: 50%;
-      color: var(--ink);
-      background: radial-gradient(circle at 42% 36%, var(--sand-light), var(--sand) 70%);
-      box-shadow: 0 12px 28px var(--shadow);
-      font-size: .74rem;
-      font-weight: 900;
-      letter-spacing: .12em;
-      transform: rotate(-7deg);
-    }
-
-    .hint {
-      position: absolute;
-      z-index: 5;
-      top: 5%;
-      right: 2%;
-      max-width: 260px;
-      padding: 13px 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 17px;
-      color: rgba(255,249,236,.77);
-      background: rgba(26,16,10,.48);
-      box-shadow: 0 12px 28px rgba(0,0,0,.12);
-      font-size: .86rem;
-      line-height: 1.45;
-      backdrop-filter: blur(10px);
-    }
-
-    .hint strong {
-      color: var(--cream);
-    }
-
-    /* FORM NEL FLUSSO DELLA PAGINA: niente top assoluti e niente tagli */
-    .form-section {
-      position: relative;
-      z-index: 10;
-      width: min(790px, calc(100% - 20px));
-      margin: 0 auto 58px;
-      padding: clamp(26px, 5vw, 50px);
-      border: 10px solid var(--sand-edge);
-      border-radius: 76px 76px 62px 62px / 54px 54px 68px 68px;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 22% 13%, rgba(255,255,255,.34), transparent 24%),
-        linear-gradient(145deg, #e8ca97, var(--sand) 56%, #cda36d);
-      box-shadow:
-        0 30px 75px rgba(18,10,6,.35),
-        inset 0 2px 0 rgba(255,255,255,.32);
-    }
-
-    .form-heading {
-      max-width: 620px;
-      margin: 0 auto 24px;
-      text-align: center;
-    }
-
-    .form-heading .kicker {
-      display: block;
-      margin-bottom: 8px;
-      color: #65462d;
-      font-size: .72rem;
-      font-weight: 900;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-    }
-
-    .form-heading h2 {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(2rem, 6vw, 4.1rem);
-      font-weight: 500;
-      line-height: .95;
-      letter-spacing: -.045em;
-      text-wrap: balance;
-    }
-
-    .form-heading p {
-      max-width: 540px;
-      margin: 13px auto 0;
-      color: rgba(42,28,20,.7);
-      line-height: 1.5;
-    }
-
-    .leaf-frame {
-      position: relative;
-      padding: clamp(14px, 3vw, 26px);
-      border: 1px solid rgba(49,93,57,.18);
-      border-radius: 34px;
-      background:
-        linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.76)),
-        repeating-linear-gradient(112deg, rgba(49,93,57,.07) 0 2px, transparent 2px 16px);
-      box-shadow:
-        0 20px 46px rgba(57,36,19,.16),
-        inset 0 0 0 8px rgba(255,255,255,.23);
-      overflow: visible;
-    }
-
-    /* NESSUN overflow:hidden: il contenuto Tally può crescere */
-    .tally-container {
-      position: relative;
-      z-index: 4;
-      width: 100%;
-      overflow: visible;
-      border-radius: 24px;
-      background: rgba(255,255,255,.9);
-      box-shadow: 0 10px 25px rgba(53,36,23,.08);
-    }
-
-    .tally-container iframe {
-      display: block;
-      width: 100%;
-      min-height: 760px;
-      border: 0;
-      border-radius: 24px;
-      background: transparent;
-    }
-
-    .leaf {
-      position: absolute;
-      z-index: 5;
-      width: 48px;
-      height: 25px;
-      border-radius: 100% 0 100% 0;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.22), transparent 35%),
-        linear-gradient(135deg, var(--leaf-light), var(--leaf-dark));
-      box-shadow: 0 6px 13px rgba(38,69,37,.20);
-      transform: rotate(var(--r, 0deg));
-      transform-origin: 0 100%;
+      left: 12px;
+      bottom: 12px;
+      max-width: min(540px, calc(100% - 24px));
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(5,12,22,.82);
+      color: #dce8f6;
+      font-size: 12px;
+      line-height: 1.35;
       pointer-events: none;
+      backdrop-filter: blur(7px);
     }
 
-    .leaf::after {
-      content: "";
+    #message {
       position: absolute;
-      left: 5px;
-      right: 4px;
-      top: 50%;
-      height: 1px;
-      background: rgba(255,255,255,.35);
-      transform: rotate(-12deg);
-      transform-origin: left;
-    }
-
-    .l1 { top: -11px; left: 6%; --r: -22deg; }
-    .l2 { top: 18%; left: -11px; --r: 43deg; width: 42px; }
-    .l3 { top: 48%; left: -8px; --r: 20deg; }
-    .l4 { bottom: 8%; left: -5px; --r: 54deg; width: 40px; }
-    .l5 { bottom: -10px; left: 13%; --r: 30deg; }
-    .l6 { top: -10px; right: 8%; --r: 160deg; }
-    .l7 { top: 21%; right: -8px; --r: 120deg; width: 41px; }
-    .l8 { top: 51%; right: -11px; --r: 145deg; }
-    .l9 { bottom: 10%; right: -7px; --r: 112deg; width: 40px; }
-    .l10 { bottom: -9px; right: 14%; --r: 205deg; }
-
-    /* FORMICHE DECORATIVE NEL TERRENO */
-    .soil-ant {
-      position: absolute;
-      z-index: 1;
-      width: 20px;
-      height: 35px;
-      opacity: .82;
-      pointer-events: none;
-      filter: drop-shadow(0 3px 2px rgba(0,0,0,.18));
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-    }
-
-    .soil-ant::before,
-    .soil-ant::after,
-    .soil-ant > span,
-    .cursor-ant::before,
-    .cursor-ant::after,
-    .cursor-ant > span {
-      content: "";
-      position: absolute;
+      top: 12px;
       left: 50%;
-      border-radius: 50%;
-      background: #17100b;
       transform: translateX(-50%);
-    }
-
-    .soil-ant::before,
-    .cursor-ant::before {
-      top: 1px;
-      width: 8px;
-      height: 8px;
-    }
-
-    .soil-ant > span,
-    .cursor-ant > span {
-      top: 10px;
-      width: 10px;
-      height: 10px;
-    }
-
-    .soil-ant::after,
-    .cursor-ant::after {
-      top: 22px;
-      width: 13px;
-      height: 13px;
-    }
-
-    .soil-ant i,
-    .cursor-ant i {
-      position: absolute;
-      left: 50%;
-      top: 15px;
-      width: 28px;
-      height: 1.5px;
-      background: #17100b;
-      transform: translateX(-50%) rotate(var(--leg));
-      transform-origin: center;
-    }
-
-    .soil-ant i:nth-child(1),
-    .cursor-ant i:nth-child(1) { --leg: 28deg; }
-
-    .soil-ant i:nth-child(2),
-    .cursor-ant i:nth-child(2) { --leg: -28deg; }
-
-    .soil-ant i:nth-child(3),
-    .cursor-ant i:nth-child(3) { --leg: 0deg; }
-
-    .ant-a {
-      left: 7%;
-      top: 64%;
-      animation: wander-a 17s linear infinite;
-    }
-
-    .ant-b {
-      right: 7%;
-      top: 49%;
-      animation: wander-b 20s linear -7s infinite;
-    }
-
-    .ant-c {
-      left: 48%;
-      top: 15%;
-      animation: wander-c 19s linear -4s infinite;
-    }
-
-    @keyframes wander-a {
-      0% { transform: translate(0,0) rotate(10deg); }
-      32% { transform: translate(80px,-35px) rotate(105deg); }
-      68% { transform: translate(35px,55px) rotate(235deg); }
-      100% { transform: translate(0,0) rotate(370deg); }
-    }
-
-    @keyframes wander-b {
-      0% { transform: translate(0,0) rotate(-10deg); }
-      36% { transform: translate(-95px,45px) rotate(-130deg); }
-      72% { transform: translate(-40px,-35px) rotate(-250deg); }
-      100% { transform: translate(0,0) rotate(-370deg); }
-    }
-
-    @keyframes wander-c {
-      0% { transform: translate(0,0) rotate(20deg); }
-      35% { transform: translate(60px,35px) rotate(120deg); }
-      70% { transform: translate(-45px,60px) rotate(250deg); }
-      100% { transform: translate(0,0) rotate(380deg); }
-    }
-
-    /* CURSORE-FORMICA SOLO DESKTOP */
-    .cursor-ant {
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 22px;
-      height: 38px;
-      opacity: 0;
-      pointer-events: none;
-      filter: drop-shadow(0 3px 2px rgba(0,0,0,.25));
-      transform: translate(-50%, -50%);
-      transition: opacity .12s ease;
-      will-change: transform;
-    }
-
-    body.desktop-pointer {
-      cursor: none;
-    }
-
-    .footer {
-      width: min(760px, calc(100% - 32px));
-      margin: -24px auto 28px;
-      color: rgba(255,249,236,.48);
-      font-size: .79rem;
-      line-height: 1.45;
+      z-index: 10;
+      max-width: calc(100% - 24px);
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(5,12,22,.86);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 13px;
       text-align: center;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    #message.good { color: var(--good); border-color: rgba(73,227,139,.55); }
+    #message.bad { color: var(--bad); border-color: rgba(255,93,117,.55); }
+
+    .pov-card {
+      display: grid;
+      grid-template-rows: auto minmax(0,1fr);
+      padding: 10px;
+      gap: 8px;
+      background: linear-gradient(180deg, rgba(19,36,58,.95), rgba(8,19,32,.98));
     }
 
-    @media (max-width: 760px) {
-      .hero {
-        width: min(100% - 24px, 680px);
-        padding-top: 24px;
-      }
+    .pov-header {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+    }
+    .pov-header strong { font-size: 14px; }
+    .pov-header small { color: var(--muted); }
 
-      .tunnel-zone {
-        width: 100%;
-        height: 430px;
-        margin-top: 0;
-      }
-
-      .tunnel-map {
-        left: -12%;
-        width: 124%;
-      }
-
-      .tunnel-edge {
-        stroke-width: 82;
-      }
-
-      .tunnel-fill {
-        stroke-width: 59;
-      }
-
-      .entrance {
-        left: 8px;
-        top: 27%;
-        width: 86px;
-        height: 58px;
-        border-width: 7px;
-        font-size: .65rem;
-      }
-
-      .hint {
-        top: 4%;
-        right: 12px;
-        max-width: 185px;
-        padding: 11px 12px;
-        font-size: .76rem;
-      }
-
-      .form-section {
-        width: calc(100% - 14px);
-        margin-top: -6px;
-        padding: 28px 13px 22px;
-        border-width: 8px;
-        border-radius: 54px 54px 42px 42px / 38px 38px 50px 50px;
-      }
-
-      .form-heading {
-        margin-bottom: 18px;
-      }
-
-      .form-heading p {
-        font-size: .91rem;
-      }
-
-      .leaf-frame {
-        padding: 14px 8px;
-        border-radius: 27px;
-        box-shadow:
-          0 16px 34px rgba(57,36,19,.14),
-          inset 0 0 0 5px rgba(255,255,255,.22);
-      }
-
-      .tally-container,
-      .tally-container iframe {
-        border-radius: 19px;
-      }
-
-      .tally-container iframe {
-        min-height: 920px;
-      }
-
-      .leaf {
-        width: 40px;
-        height: 21px;
-      }
+    #povGrid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      grid-template-rows: repeat(3, minmax(0,1fr));
+      gap: 8px;
     }
 
-    @media (max-width: 420px) {
-      .hero p {
-        max-width: 330px;
-      }
-
-      .tunnel-zone {
-        height: 390px;
-      }
-
-      .hint {
-        display: none;
-      }
-
-      .tally-container iframe {
-        min-height: 1000px;
-      }
-
-      .form-section {
-        width: calc(100% - 8px);
-        padding-inline: 9px;
-      }
-
-      .leaf-frame {
-        padding-inline: 5px;
-      }
+    .pov-wrap {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,.12);
+      border-radius: 13px;
+      background: #0c1a2b;
+      cursor: pointer;
+      transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    }
+    .pov-wrap:hover { border-color: rgba(255,255,255,.32); }
+    .pov-wrap.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,216,74,.16), 0 12px 30px rgba(0,0,0,.25);
+      transform: translateY(-1px);
+    }
+    .pov-wrap.solved { border-color: var(--good); }
+    .pov-wrap.wrong { animation: shake .28s linear; border-color: var(--bad); }
+    .pov-wrap.hidden { display: none; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
     }
 
-    @media (pointer: coarse), (hover: none) {
-      body.desktop-pointer {
-        cursor: auto;
-      }
+    .pov-wrap canvas { width: 100%; height: 100%; display: block; }
+    .pov-label {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      z-index: 2;
+      min-width: 28px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: rgba(2,7,13,.76);
+      border: 1px solid rgba(255,255,255,.15);
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      pointer-events: none;
+    }
+    .pov-state {
+      position: absolute;
+      inset: auto 7px 7px 7px;
+      padding: 5px 7px;
+      border-radius: 8px;
+      background: rgba(2,7,13,.72);
+      color: #e9f3ff;
+      font-size: 10px;
+      text-align: center;
+      pointer-events: none;
+    }
+    .pov-wrap.solved .pov-state { color: var(--good); font-weight: 850; }
 
-      .cursor-ant {
-        display: none;
-      }
+    .select-label {
+      color: var(--muted);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-      }
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      #app { height: auto; min-height: 100%; }
+      .topbar { align-items: flex-start; flex-wrap: wrap; }
+      .controls { margin-left: 0; justify-content: flex-start; }
+      .workspace { grid-template-columns: 1fr; grid-template-rows: 58vh 70vh; }
+      .title-wrap { min-width: 0; width: 100%; }
+    }
+
+    @media (max-width: 560px) {
+      #app { padding: 6px; gap: 6px; }
+      .workspace { gap: 6px; grid-template-rows: 58vh 112vh; }
+      #povGrid { grid-template-columns: 1fr; grid-template-rows: repeat(6, minmax(150px,1fr)); }
+      .pov-card { overflow: auto; }
     }
   </style>
 </head>
-
 <body>
-  <main class="page">
-    <header class="hero">
-      <div class="badge">Snail Garden</div>
-      <h1>Segui le gallerie</h1>
-      <p>Porta la formica fino alla camera delle foglie e inviaci una foto, un audio o il tuo racconto.</p>
-    </header>
+<div id="app">
+  <header class="topbar">
+    <div class="title-wrap">
+      <h1>Di chi sono questi occhi?</h1>
+      <div class="subtitle">Osserva la piazza e abbina ogni visuale in prima persona al personaggio giusto.</div>
+    </div>
 
-    <section class="tunnel-zone" id="tunnel-zone" aria-label="Tunnel delle formiche">
-      <div class="entrance">ENTRA</div>
+    <div class="stats">
+      <div class="pill">Round <span id="roundStat">1</span></div>
+      <div class="pill">Punti <span id="scoreStat">0</span></div>
+      <div class="pill">Rimasti <span id="leftStat">6</span></div>
+      <div class="pill">Tempo <span id="timeStat">0:00</span></div>
+    </div>
 
-      <aside class="hint">
-        <strong>Muovi il mouse:</strong> la formica segue il centro delle gallerie.
-      </aside>
+    <div class="controls">
+      <label class="select-label">POV
+        <select id="povCountSelect" aria-label="Numero di visuali">
+          <option value="5">5</option>
+          <option value="6" selected>6</option>
+        </select>
+      </label>
+      <label class="select-label">Movimento
+        <select id="difficultySelect" aria-label="Velocità del movimento">
+          <option value="0.55">Calmo</option>
+          <option value="1" selected>Normale</option>
+          <option value="1.55">Caotico</option>
+        </select>
+      </label>
+      <button id="freezeBtn">Blocca scena</button>
+      <button id="newRoundBtn" class="primary">Nuovo round</button>
+    </div>
+  </header>
 
-      <svg class="tunnel-map" viewBox="0 0 1180 560" preserveAspectRatio="none" aria-hidden="true">
-        <!-- Bordi disegnati insieme -->
-        <g>
-          <path class="tunnel-edge" d="M100 155 C205 112 245 208 343 194 C438 180 431 89 528 105 C641 123 610 246 727 238 C841 230 867 153 972 183 C1061 208 1051 302 960 335 C861 371 771 347 712 426 C675 475 660 505 651 548" />
-          <path class="tunnel-edge" d="M343 194 C316 272 238 291 208 379" />
-          <path class="tunnel-edge" d="M528 105 C532 190 488 249 455 327" />
-          <path class="tunnel-edge" d="M727 238 C785 316 848 366 937 447" />
-        </g>
-
-        <!-- Camere esterne -->
-        <g>
-          <ellipse class="room-edge" cx="198" cy="397" rx="82" ry="64" />
-          <ellipse class="room-edge" cx="442" cy="346" rx="86" ry="67" />
-          <ellipse class="room-edge" cx="958" cy="467" rx="90" ry="70" />
-        </g>
-
-        <!-- Riempimenti -->
-        <g>
-          <path class="tunnel-fill mouse-path" d="M100 155 C205 112 245 208 343 194 C438 180 431 89 528 105 C641 123 610 246 727 238 C841 230 867 153 972 183 C1061 208 1051 302 960 335 C861 371 771 347 712 426 C675 475 660 505 651 548" />
-          <path class="tunnel-fill mouse-path" d="M343 194 C316 272 238 291 208 379" />
-          <path class="tunnel-fill mouse-path" d="M528 105 C532 190 488 249 455 327" />
-          <path class="tunnel-fill mouse-path" d="M727 238 C785 316 848 366 937 447" />
-        </g>
-
-        <!-- Camere interne coprono le terminazioni -->
-        <g>
-          <ellipse class="room-fill" cx="198" cy="397" rx="67" ry="49" />
-          <ellipse class="room-fill" cx="442" cy="346" rx="71" ry="52" />
-          <ellipse class="room-fill" cx="958" cy="467" rx="75" ry="55" />
-        </g>
-
-        <path class="tunnel-shine" d="M101 141 C207 101 246 194 342 181 C435 168 433 78 527 92" />
-        <path class="tunnel-shine" d="M729 225 C842 217 870 141 974 170" />
-      </svg>
-
-      <span class="soil-ant ant-a" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-      <span class="soil-ant ant-b" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-      <span class="soil-ant ant-c" aria-hidden="true"><i></i><i></i><i></i><span></span></span>
-    </section>
-
-    <section class="form-section" id="form-section">
-      <header class="form-heading">
-        <span class="kicker">La camera delle foglie</span>
-        <h2>Invia qualcosa a Snail Garden</h2>
-        <p>Il modulo si adatta alla sua altezza completa, compreso il pulsante finale di invio.</p>
-      </header>
-
-      <div class="leaf-frame">
-        <i class="leaf l1" aria-hidden="true"></i>
-        <i class="leaf l2" aria-hidden="true"></i>
-        <i class="leaf l3" aria-hidden="true"></i>
-        <i class="leaf l4" aria-hidden="true"></i>
-        <i class="leaf l5" aria-hidden="true"></i>
-        <i class="leaf l6" aria-hidden="true"></i>
-        <i class="leaf l7" aria-hidden="true"></i>
-        <i class="leaf l8" aria-hidden="true"></i>
-        <i class="leaf l9" aria-hidden="true"></i>
-        <i class="leaf l10" aria-hidden="true"></i>
-
-        <div class="tally-container">
-          <iframe
-            data-tally-src="https://tally.so/embed/EkeqWA?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-            loading="eager"
-            width="100%"
-            height="1000"
-            frameborder="0"
-            marginheight="0"
-            marginwidth="0"
-            title="Invia una foto a Snail Garden"
-          ></iframe>
-        </div>
+  <main class="workspace">
+    <section class="main-card">
+      <canvas id="mainCanvas" aria-label="Piazza con cinquanta personaggi"></canvas>
+      <div id="message">Seleziona un riquadro POV, poi clicca una persona numerata.</div>
+      <div class="main-hint">
+        <strong>Comandi:</strong> trascina per ruotare la telecamera, usa la rotellina per zoomare. I numeri identificano le 50 persone. I punti di riferimento colorati aiutano a ricostruire la posizione di chi sta guardando.
       </div>
     </section>
 
-    <p class="footer">
-      Il form resta utilizzabile su telefono, tablet e desktop. Le foglie decorano i bordi senza coprire i campi.
-    </p>
+    <aside class="pov-card">
+      <div class="pov-header">
+        <strong>Visuali dagli occhi</strong>
+        <small id="selectionText">Nessun POV selezionato</small>
+      </div>
+      <div id="povGrid"></div>
+    </aside>
   </main>
+</div>
 
-  <div class="cursor-ant" id="cursor-ant" aria-hidden="true">
-    <i></i><i></i><i></i><span></span>
-  </div>
+<script>
+(() => {
+  'use strict';
 
-  <script>
-    /* Embed Tally con altezza dinamica */
-    var d = document;
-    var w = "https://tally.so/widgets/embed.js";
+  const TEST_MODE = new URLSearchParams(location.search).has('test');
+  const TAU = Math.PI * 2;
+  const WORLD = 25;
+  const PEOPLE_COUNT = 50;
+  const COLORS = [
+    '#ff5f6d','#ffd166','#06d6a0','#4cc9f0','#9b5de5',
+    '#f15bb5','#fca311','#8ac926','#00bbf9','#e76f51',
+    '#c77dff','#70e000','#ff8fab','#48cae4','#fb8500'
+  ];
+  const SKINS = ['#f5c7a9','#dca57a','#b97850','#8d5524','#6f3f27','#ffd2b8'];
+  const HATS = ['none','cap','cone','halo','square'];
+  const GESTURES = ['walk','wave','jump','spin','crouch'];
 
-    var loadTally = function () {
-      if (typeof Tally !== "undefined") {
-        Tally.loadEmbeds();
-      } else {
-        d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function (iframe) {
-          iframe.src = iframe.dataset.tallySrc;
-        });
-      }
+  const mainCanvas = document.getElementById('mainCanvas');
+  const mainCtx = mainCanvas.getContext('2d');
+  const povGrid = document.getElementById('povGrid');
+  const messageEl = document.getElementById('message');
+  const roundStat = document.getElementById('roundStat');
+  const scoreStat = document.getElementById('scoreStat');
+  const leftStat = document.getElementById('leftStat');
+  const timeStat = document.getElementById('timeStat');
+  const selectionText = document.getElementById('selectionText');
+  const freezeBtn = document.getElementById('freezeBtn');
+  const newRoundBtn = document.getElementById('newRoundBtn');
+  const povCountSelect = document.getElementById('povCountSelect');
+  const difficultySelect = document.getElementById('difficultySelect');
+
+  const panelLetters = ['A','B','C','D','E','F'];
+  const panels = [];
+  for (let i = 0; i < 6; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'pov-wrap';
+    wrap.dataset.index = String(i);
+    const canvas = document.createElement('canvas');
+    const label = document.createElement('div');
+    label.className = 'pov-label';
+    label.textContent = `POV ${panelLetters[i]}`;
+    const state = document.createElement('div');
+    state.className = 'pov-state';
+    state.textContent = 'Seleziona questo riquadro';
+    wrap.append(canvas, label, state);
+    povGrid.appendChild(wrap);
+    panels.push({ wrap, canvas, ctx: canvas.getContext('2d'), state, targetId: -1, solved: false });
+    wrap.addEventListener('click', () => selectPanel(i));
+  }
+
+  const state = {
+    people: [],
+    landmarks: [],
+    round: 0,
+    score: 0,
+    selectedPanel: -1,
+    povCount: 6,
+    frozen: false,
+    speedMultiplier: 1,
+    roundSeconds: 0,
+    lastTime: performance.now(),
+    picks: [],
+    camera: { yaw: 0.08, pitch: 0.62, distance: 49, target: {x:0,y:0,z:0} },
+    drag: { active:false, moved:false, x:0, y:0 },
+    messageTimer: 0,
+    audio: null
+  };
+
+  const rand = (a=0,b=1) => a + Math.random() * (b-a);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const hypot3 = (x,y,z) => Math.hypot(x,y,z);
+  const normalize3 = (v) => {
+    const d = hypot3(v.x,v.y,v.z) || 1;
+    return {x:v.x/d,y:v.y/d,z:v.z/d};
+  };
+  const dot3 = (a,b) => a.x*b.x+a.y*b.y+a.z*b.z;
+  const cross3 = (a,b) => ({x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x});
+  const angleDiff = (a,b) => Math.atan2(Math.sin(b-a), Math.cos(b-a));
+
+  function choose(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffled(arr) {
+    const out = [...arr];
+    for (let i=out.length-1;i>0;i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [out[i],out[j]] = [out[j],out[i]];
+    }
+    return out;
+  }
+
+  function resizeCanvas(canvas, ctx) {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(rect.width));
+    const h = Math.max(1, Math.round(rect.height));
+    const pw = Math.round(w*dpr), ph = Math.round(h*dpr);
+    if (canvas.width !== pw || canvas.height !== ph) {
+      canvas.width = pw; canvas.height = ph;
+    }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w,h,dpr};
+  }
+
+  function createLandmarks() {
+    const L = [];
+    L.push({type:'fountain', x:0,z:0, size:3.2, height:2.8, color:'#35b7ff', label:'FONTANA'});
+    L.push({type:'pillar', x:-19,z:-19, size:1.6, height:7.5, color:'#ff3d57', label:'TORRE ROSSA'});
+    L.push({type:'pillar', x:19,z:-19, size:1.6, height:7.5, color:'#ffd43b', label:'TORRE GIALLA'});
+    L.push({type:'pillar', x:-19,z:19, size:1.6, height:7.5, color:'#32d583', label:'TORRE VERDE'});
+    L.push({type:'pillar', x:19,z:19, size:1.6, height:7.5, color:'#9d6cff', label:'TORRE VIOLA'});
+    L.push({type:'stage', x:0,z:20, size:7, height:1.4, color:'#ff8a3d', label:'PALCO'});
+    L.push({type:'arch', x:0,z:-23, size:5.5, height:5.8, color:'#78a6d8', label:'PORTA NORD'});
+    L.push({type:'arch', x:23,z:0, size:5.5, height:5.8, color:'#78a6d8', label:'PORTA EST'});
+    const trees = [
+      [-12,-4],[-14,5],[-8,13],[9,-12],[13,-6],[12,8],[-5,-14],[5,14]
+    ];
+    trees.forEach((p,i)=>L.push({type:'tree',x:p[0],z:p[1],size:2.2,height:5+((i%3)*.4),color:'#28a96b',label:''}));
+    const benches = [[-7,-8,0],[7,8,Math.PI],[-10,11,1.4],[11,-10,-1.7]];
+    benches.forEach(p=>L.push({type:'bench',x:p[0],z:p[1],heading:p[2],size:2.4,height:1.0,color:'#b77a48',label:''}));
+    return L;
+  }
+
+  function spawnPerson(id) {
+    let x,z;
+    do {
+      x = rand(-WORLD+2, WORLD-2);
+      z = rand(-WORLD+2, WORLD-2);
+    } while (Math.hypot(x,z) < 4.5);
+    return {
+      id,
+      x,z,
+      goalX: rand(-WORLD+2, WORLD-2),
+      goalZ: rand(-WORLD+2, WORLD-2),
+      heading: rand(0,TAU),
+      viewHeading: 0,
+      speed: rand(.75,1.4),
+      shirt: COLORS[id % COLORS.length],
+      pants: id % 3 === 0 ? '#24324b' : (id % 3 === 1 ? '#394a5f' : '#4c3a50'),
+      skin: SKINS[id % SKINS.length],
+      hat: HATS[id % HATS.length],
+      hatColor: COLORS[(id*7+3)%COLORS.length],
+      gesture: 'walk',
+      gestureTimer: rand(1.2,5.5),
+      gesturePhase: rand(0,TAU),
+      walkPhase: rand(0,TAU),
+      stride: 0,
+      target: false,
+      solved: false
     };
+  }
 
-    if (typeof Tally !== "undefined") {
-      loadTally();
-    } else if (d.querySelector('script[src="' + w + '"]') === null) {
-      var script = d.createElement("script");
-      script.src = w;
-      script.async = true;
-      script.onload = loadTally;
-      script.onerror = loadTally;
-      d.body.appendChild(script);
+  function resetPeople() {
+    state.people = Array.from({length:PEOPLE_COUNT}, (_,i)=>spawnPerson(i+1));
+  }
+
+  function startRound() {
+    state.round++;
+    state.roundSeconds = 0;
+    state.selectedPanel = -1;
+    state.messageTimer = 0;
+    state.people.forEach(p => { p.target=false; p.solved=false; });
+    const ids = shuffled(state.people.map(p=>p.id)).slice(0,state.povCount);
+    ids.forEach(id => state.people[id-1].target = true);
+    panels.forEach((panel,i) => {
+      panel.targetId = i < state.povCount ? ids[i] : -1;
+      panel.solved = false;
+      panel.wrap.classList.toggle('hidden', i >= state.povCount);
+      panel.wrap.classList.remove('selected','solved','wrong');
+      panel.state.textContent = i < state.povCount ? 'Seleziona questo riquadro' : '';
+    });
+    showMessage('Seleziona un riquadro POV, poi clicca una persona numerata.', '');
+    updateHud();
+  }
+
+  function selectPanel(index) {
+    if (index >= state.povCount || panels[index].solved) return;
+    ensureAudio();
+    state.selectedPanel = index;
+    panels.forEach((p,i)=>p.wrap.classList.toggle('selected', i===index && !p.solved));
+    selectionText.textContent = `Selezionato: POV ${panelLetters[index]}`;
+    showMessage(`POV ${panelLetters[index]} selezionato: scegli la persona nella piazza.`, '');
+  }
+
+  function identifyPerson(personId) {
+    if (state.selectedPanel < 0) {
+      showMessage('Prima seleziona uno dei riquadri POV.', 'bad');
+      playTone(false);
+      return;
     }
-
-    /* Cursore-formica vincolato ai tunnel, attivo soltanto con mouse */
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const cursorAnt = document.getElementById("cursor-ant");
-    const formSection = document.getElementById("form-section");
-    const paths = [...document.querySelectorAll(".mouse-path")];
-
-    let samples = [];
-    let previous = null;
-
-    if (finePointer) {
-      document.body.classList.add("desktop-pointer");
-    }
-
-    function rebuildSamples() {
-      samples = [];
-
-      paths.forEach(function (path) {
-        const svg = path.ownerSVGElement;
-        const matrix = svg.getScreenCTM();
-
-        if (!matrix) return;
-
-        const length = path.getTotalLength();
-
-        for (let distance = 0; distance <= length; distance += 4) {
-          const point = path.getPointAtLength(distance);
-          const screen = new DOMPoint(point.x, point.y).matrixTransform(matrix);
-
-          samples.push({ x: screen.x, y: screen.y });
-        }
-      });
-    }
-
-    function nearestPoint(x, y) {
-      let point = null;
-      let best = Infinity;
-
-      for (const sample of samples) {
-        const dx = sample.x - x;
-        const dy = sample.y - y;
-        const value = dx * dx + dy * dy;
-
-        if (value < best) {
-          best = value;
-          point = sample;
-        }
+    const panel = panels[state.selectedPanel];
+    if (panel.solved) return;
+    if (personId === panel.targetId) {
+      panel.solved = true;
+      panel.wrap.classList.remove('selected');
+      panel.wrap.classList.add('solved');
+      panel.state.textContent = `Corretto: persona ${personId}`;
+      state.people[personId-1].solved = true;
+      const speedBonus = Math.max(0, 120 - Math.floor(state.roundSeconds*2));
+      state.score += 100 + speedBonus;
+      showMessage(`Esatto! Il POV ${panelLetters[state.selectedPanel]} appartiene alla persona ${personId}. +${100+speedBonus}`, 'good');
+      playTone(true);
+      state.selectedPanel = -1;
+      selectionText.textContent = 'Nessun POV selezionato';
+      const left = panels.slice(0,state.povCount).filter(p=>!p.solved).length;
+      if (left === 0) {
+        state.score += 250;
+        showMessage('Round completato! Bonus +250. Premi “Nuovo round”.', 'good', 100000);
       }
+    } else {
+      state.score = Math.max(0, state.score - 25);
+      panel.wrap.classList.remove('wrong');
+      void panel.wrap.offsetWidth;
+      panel.wrap.classList.add('wrong');
+      showMessage(`Persona ${personId}: scelta errata. -25`, 'bad');
+      playTone(false);
+    }
+    updateHud();
+  }
 
-      return { point: point, distance: Math.sqrt(best) };
+  function updateHud() {
+    roundStat.textContent = String(state.round);
+    scoreStat.textContent = String(state.score);
+    const left = panels.slice(0,state.povCount).filter(p=>!p.solved).length;
+    leftStat.textContent = String(left);
+    const mins = Math.floor(state.roundSeconds/60);
+    const secs = Math.floor(state.roundSeconds%60).toString().padStart(2,'0');
+    timeStat.textContent = `${mins}:${secs}`;
+  }
+
+  function showMessage(text, kind='', duration=2200) {
+    messageEl.textContent = text;
+    messageEl.className = kind;
+    state.messageTimer = duration;
+  }
+
+  function ensureAudio() {
+    if (!state.audio) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) state.audio = new AC();
+    }
+    if (state.audio?.state === 'suspended') state.audio.resume();
+  }
+
+  function playTone(ok) {
+    ensureAudio();
+    if (!state.audio) return;
+    const t = state.audio.currentTime;
+    const osc = state.audio.createOscillator();
+    const gain = state.audio.createGain();
+    osc.type = ok ? 'sine' : 'square';
+    osc.frequency.setValueAtTime(ok ? 520 : 180, t);
+    if (ok) osc.frequency.exponentialRampToValueAtTime(780, t+.12);
+    else osc.frequency.exponentialRampToValueAtTime(120, t+.12);
+    gain.gain.setValueAtTime(.0001,t);
+    gain.gain.exponentialRampToValueAtTime(.11,t+.015);
+    gain.gain.exponentialRampToValueAtTime(.0001,t+.18);
+    osc.connect(gain).connect(state.audio.destination);
+    osc.start(t); osc.stop(t+.19);
+  }
+
+  function updatePeople(dt) {
+    const speedMul = state.speedMultiplier;
+    for (const p of state.people) {
+      p.gestureTimer -= dt;
+      if (p.gestureTimer <= 0) {
+        p.gesture = choose(GESTURES);
+        p.gestureTimer = p.gesture === 'walk' ? rand(1.8,4) : rand(1,2.4);
+        p.gesturePhase = 0;
+      }
+      p.gesturePhase += dt * (p.gesture === 'spin' ? 4.6 : 2.7);
+
+      const dx = p.goalX-p.x, dz = p.goalZ-p.z;
+      const dist = Math.hypot(dx,dz);
+      if (dist < 1 || Math.random() < .0006) {
+        p.goalX = rand(-WORLD+2, WORLD-2);
+        p.goalZ = rand(-WORLD+2, WORLD-2);
+      }
+      const desired = Math.atan2(dx,dz);
+      p.heading += clamp(angleDiff(p.heading,desired), -dt*2.2, dt*2.2);
+      const moveScale = p.gesture === 'crouch' ? .35 : (p.gesture === 'jump' ? .75 : 1);
+      const step = p.speed * speedMul * moveScale * dt;
+      p.x += Math.sin(p.heading)*step;
+      p.z += Math.cos(p.heading)*step;
+      p.x = clamp(p.x,-WORLD+1,WORLD-1);
+      p.z = clamp(p.z,-WORLD+1,WORLD-1);
+      p.walkPhase += step*6.5;
+      p.stride = Math.sin(p.walkPhase);
+      p.viewHeading = p.heading + (p.gesture === 'spin' ? p.gesturePhase*.75 : Math.sin(p.walkPhase*.5)*.025);
+    }
+  }
+
+  function buildCamera(pos, target, fovDeg, viewportW) {
+    const forward = normalize3({x:target.x-pos.x,y:target.y-pos.y,z:target.z-pos.z});
+    let right = normalize3(cross3(forward,{x:0,y:1,z:0}));
+    if (hypot3(right.x,right.y,right.z) < .01) right = {x:1,y:0,z:0};
+    const up = normalize3(cross3(right,forward));
+    return {
+      pos, forward, right, up,
+      focal: viewportW/(2*Math.tan((fovDeg*Math.PI/180)/2)),
+      near: .08
+    };
+  }
+
+  function mainCamera(w) {
+    const c = state.camera;
+    const cp = Math.cos(c.pitch);
+    const pos = {
+      x: c.target.x + Math.sin(c.yaw)*cp*c.distance,
+      y: c.target.y + Math.sin(c.pitch)*c.distance,
+      z: c.target.z + Math.cos(c.yaw)*cp*c.distance
+    };
+    return buildCamera(pos,{x:0,y:1.3,z:0},50,w);
+  }
+
+  function povCamera(person,w) {
+    const bob = Math.sin(person.walkPhase*2)*.025;
+    const jump = person.gesture === 'jump' ? Math.max(0,Math.sin(person.gesturePhase*Math.PI))*0.48 : 0;
+    const crouch = person.gesture === 'crouch' ? .35 : 0;
+    const pos = {x:person.x,y:1.64+bob+jump-crouch,z:person.z};
+    const h = person.viewHeading;
+    const target = {x:pos.x+Math.sin(h)*10,y:pos.y-.02,z:pos.z+Math.cos(h)*10};
+    return buildCamera(pos,target,76,w);
+  }
+
+  function cameraSpace(cam,p) {
+    const r = {x:p.x-cam.pos.x,y:p.y-cam.pos.y,z:p.z-cam.pos.z};
+    return {x:dot3(r,cam.right),y:dot3(r,cam.up),z:dot3(r,cam.forward)};
+  }
+
+  function project(cam,p,w,h) {
+    const q = cameraSpace(cam,p);
+    if (q.z <= cam.near) return null;
+    return {x:w*.5+(q.x/q.z)*cam.focal, y:h*.5-(q.y/q.z)*cam.focal, z:q.z, scale:cam.focal/q.z};
+  }
+
+  function projectedLine(cam,a,b,w,h) {
+    let A = cameraSpace(cam,a), B = cameraSpace(cam,b);
+    const n = cam.near;
+    if (A.z <= n && B.z <= n) return null;
+    if (A.z <= n || B.z <= n) {
+      const front = A.z > n ? A : B;
+      const back = A.z > n ? B : A;
+      const t = (n-back.z)/(front.z-back.z);
+      const cut = {x:lerp(back.x,front.x,t),y:lerp(back.y,front.y,t),z:n};
+      if (A.z <= n) A = cut; else B = cut;
+    }
+    return {
+      a:{x:w*.5+(A.x/A.z)*cam.focal,y:h*.5-(A.y/A.z)*cam.focal,z:A.z},
+      b:{x:w*.5+(B.x/B.z)*cam.focal,y:h*.5-(B.y/B.z)*cam.focal,z:B.z}
+    };
+  }
+
+  function drawFloor(ctx,cam,w,h,isPov) {
+    if (!isPov) {
+      const bg = ctx.createLinearGradient(0,0,0,h);
+      bg.addColorStop(0,'#b9d8f3');
+      bg.addColorStop(.48,'#d7e6ef');
+      bg.addColorStop(.49,'#93a58f');
+      bg.addColorStop(1,'#52675a');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0,0,w,h);
+    } else {
+      const sky = ctx.createLinearGradient(0,0,0,h*.55);
+      sky.addColorStop(0,'#77b7ef');
+      sky.addColorStop(1,'#dcecf8');
+      ctx.fillStyle=sky; ctx.fillRect(0,0,w,h*.55);
+      const ground = ctx.createLinearGradient(0,h*.43,0,h);
+      ground.addColorStop(0,'#899d86');
+      ground.addColorStop(1,'#405346');
+      ctx.fillStyle=ground; ctx.fillRect(0,h*.43,w,h*.57);
+      ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fillRect(0,h*.49,w,1);
     }
 
-    function inside(element, x, y) {
-      const rect = element.getBoundingClientRect();
+    ctx.save();
+    ctx.lineWidth = 1;
+    for (let v=-WORLD; v<=WORLD; v+=5) {
+      const major = v % 10 === 0;
+      ctx.strokeStyle = major ? 'rgba(235,248,255,.26)' : 'rgba(235,248,255,.13)';
+      const lx = projectedLine(cam,{x:v,y:0,z:-WORLD},{x:v,y:0,z:WORLD},w,h);
+      const lz = projectedLine(cam,{x:-WORLD,y:0,z:v},{x:WORLD,y:0,z:v},w,h);
+      for (const line of [lx,lz]) if (line) {
+        ctx.beginPath(); ctx.moveTo(line.a.x,line.a.y); ctx.lineTo(line.b.x,line.b.y); ctx.stroke();
+      }
+    }
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2;
+    const edges = [
+      [{x:-WORLD,y:0,z:-WORLD},{x:WORLD,y:0,z:-WORLD}],
+      [{x:WORLD,y:0,z:-WORLD},{x:WORLD,y:0,z:WORLD}],
+      [{x:WORLD,y:0,z:WORLD},{x:-WORLD,y:0,z:WORLD}],
+      [{x:-WORLD,y:0,z:WORLD},{x:-WORLD,y:0,z:-WORLD}]
+    ];
+    edges.forEach(e=>{
+      const line=projectedLine(cam,e[0],e[1],w,h);
+      if(line){ctx.beginPath();ctx.moveTo(line.a.x,line.a.y);ctx.lineTo(line.b.x,line.b.y);ctx.stroke();}
+    });
+    ctx.restore();
+  }
 
-      return (
-        x >= rect.left &&
-        x <= rect.right &&
-        y >= rect.top &&
-        y <= rect.bottom
-      );
+  function shade(hex, amount) {
+    const c = hex.replace('#','');
+    const n = parseInt(c.length===3 ? c.split('').map(x=>x+x).join('') : c,16);
+    const r=clamp((n>>16)+amount,0,255), g=clamp(((n>>8)&255)+amount,0,255), b=clamp((n&255)+amount,0,255);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function drawBoxObject(ctx,cam,w,h,obj,showLabel) {
+    const s=obj.size, y0=0, y1=obj.height;
+    const corners = [
+      {x:obj.x-s/2,y:y0,z:obj.z-s/2},{x:obj.x+s/2,y:y0,z:obj.z-s/2},
+      {x:obj.x+s/2,y:y0,z:obj.z+s/2},{x:obj.x-s/2,y:y0,z:obj.z+s/2},
+      {x:obj.x-s/2,y:y1,z:obj.z-s/2},{x:obj.x+s/2,y:y1,z:obj.z-s/2},
+      {x:obj.x+s/2,y:y1,z:obj.z+s/2},{x:obj.x-s/2,y:y1,z:obj.z+s/2}
+    ].map(p=>project(cam,p,w,h));
+    if (corners.filter(Boolean).length < 6) return;
+    const face = (ids,fill) => {
+      if (ids.some(i=>!corners[i])) return;
+      ctx.beginPath();ctx.moveTo(corners[ids[0]].x,corners[ids[0]].y);
+      ids.slice(1).forEach(i=>ctx.lineTo(corners[i].x,corners[i].y));
+      ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='rgba(0,0,0,.2)';ctx.stroke();
+    };
+    face([0,1,5,4],shade(obj.color,-25));
+    face([1,2,6,5],shade(obj.color,-8));
+    face([3,0,4,7],shade(obj.color,-40));
+    face([4,5,6,7],shade(obj.color,28));
+    if (showLabel && obj.label) {
+      const p = project(cam,{x:obj.x,y:obj.height+.7,z:obj.z},w,h);
+      if(p && p.z<90){
+        ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+        const tw=ctx.measureText(obj.label).width;
+        ctx.fillStyle='rgba(3,9,15,.78)';ctx.fillRect(p.x-tw/2-4,p.y-7,tw+8,14);
+        ctx.fillStyle='#fff';ctx.fillText(obj.label,p.x,p.y);
+      }
+    }
+  }
+
+  function drawLandmark(ctx,cam,w,h,obj,showLabel) {
+    if (obj.type==='pillar' || obj.type==='stage') {
+      drawBoxObject(ctx,cam,w,h,obj,showLabel);
+      return;
+    }
+    if (obj.type==='fountain') {
+      const base=project(cam,{x:obj.x,y:0,z:obj.z},w,h);
+      const top=project(cam,{x:obj.x,y:obj.height,z:obj.z},w,h);
+      if(!base||!top)return;
+      const r=clamp(obj.size*base.scale,3,160);
+      ctx.fillStyle='rgba(12,84,130,.65)';ctx.beginPath();ctx.ellipse(base.x,base.y,r,r*.34,0,0,TAU);ctx.fill();
+      ctx.strokeStyle='#88dcff';ctx.lineWidth=Math.max(1,r*.08);ctx.stroke();
+      ctx.strokeStyle='#50c8ff';ctx.lineWidth=Math.max(1,r*.12);ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(top.x,top.y);ctx.stroke();
+      ctx.fillStyle='#eafaff';ctx.beginPath();ctx.arc(top.x,top.y,Math.max(2,r*.12),0,TAU);ctx.fill();
+      if(showLabel){ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('FONTANA',top.x,top.y-10);}
+      return;
+    }
+    if (obj.type==='tree') {
+      const base=project(cam,{x:obj.x,y:0,z:obj.z},w,h);
+      const trunkTop=project(cam,{x:obj.x,y:obj.height*.55,z:obj.z},w,h);
+      const crown=project(cam,{x:obj.x,y:obj.height*.82,z:obj.z},w,h);
+      if(!base||!trunkTop||!crown)return;
+      const r=clamp(obj.size*crown.scale,3,100);
+      ctx.strokeStyle='#714a2d';ctx.lineWidth=clamp(r*.22,2,14);ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(trunkTop.x,trunkTop.y);ctx.stroke();
+      ctx.fillStyle='#1f8b56';ctx.beginPath();ctx.arc(crown.x,crown.y,r*.72,0,TAU);ctx.fill();
+      ctx.fillStyle='#36b96f';ctx.beginPath();ctx.arc(crown.x-r*.28,crown.y+r*.02,r*.46,0,TAU);ctx.fill();
+      return;
+    }
+    if (obj.type==='bench') {
+      const p=project(cam,{x:obj.x,y:.55,z:obj.z},w,h);
+      if(!p)return;
+      const ww=clamp(obj.size*p.scale,3,80), hh=clamp(.6*p.scale,2,25);
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-obj.heading*.12);ctx.fillStyle=obj.color;ctx.fillRect(-ww/2,-hh,ww,hh);ctx.fillStyle='#6f472d';ctx.fillRect(-ww*.4,0,4,hh);ctx.fillRect(ww*.4-4,0,4,hh);ctx.restore();
+      return;
+    }
+    if (obj.type==='arch') {
+      const left={...obj,x:obj.x-obj.size*.38,size:.65,height:obj.height};
+      const right={...obj,x:obj.x+obj.size*.38,size:.65,height:obj.height};
+      if (Math.abs(obj.x)>20) { left.x=obj.x;right.x=obj.x;left.z=obj.z-obj.size*.38;right.z=obj.z+obj.size*.38; }
+      drawBoxObject(ctx,cam,w,h,left,false);drawBoxObject(ctx,cam,w,h,right,false);
+      const top={...obj,x:(left.x+right.x)/2,z:(left.z+right.z)/2,size:obj.size*.92,height:.7};
+      const saved=top.height; top.height=obj.height; // custom top rendered as narrow box at altitude via manual line
+      const a=project(cam,{x:left.x,y:obj.height,z:left.z},w,h), b=project(cam,{x:right.x,y:obj.height,z:right.z},w,h);
+      if(a&&b){ctx.strokeStyle=obj.color;ctx.lineWidth=clamp(.7*((a.scale+b.scale)/2),3,18);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+      if(showLabel&&obj.label){const q=project(cam,{x:obj.x,y:obj.height+1,z:obj.z},w,h);if(q){ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(obj.label,q.x,q.y);}}
+    }
+  }
+
+  function poseFor(p) {
+    const h = p.viewHeading || p.heading;
+    const side={x:Math.cos(h),z:-Math.sin(h)};
+    const fwd={x:Math.sin(h),z:Math.cos(h)};
+    const jump=p.gesture==='jump'?Math.max(0,Math.sin(p.gesturePhase*Math.PI))*0.48:0;
+    const crouch = p.gesture === 'crouch' ? .34 : 0;
+    const baseY=jump;
+    const hipY=.82-crouch+baseY, shoulderY=1.34-crouch+baseY, headY=1.72-crouch+baseY;
+    const stride=p.stride*.18;
+    const P=(sx,y,sz)=>({x:p.x+sx,y,z:p.z+sz});
+    const hipL=P(side.x*.12,hipY,side.z*.12), hipR=P(-side.x*.12,hipY,-side.z*.12);
+    const shoulderL=P(side.x*.23,shoulderY,side.z*.23), shoulderR=P(-side.x*.23,shoulderY,-side.z*.23);
+    const footL=P(side.x*.1+fwd.x*stride,baseY,side.z*.1+fwd.z*stride);
+    const footR=P(-side.x*.1-fwd.x*stride,baseY,-side.z*.1-fwd.z*stride);
+    let handL=P(side.x*.42+fwd.x*(-stride*.4),.9-crouch+baseY,side.z*.42+fwd.z*(-stride*.4));
+    let handR=P(-side.x*.42+fwd.x*(stride*.4),.9-crouch+baseY,-side.z*.42+fwd.z*(stride*.4));
+    if(p.gesture==='wave'){
+      handR=P(-side.x*.46+fwd.x*.05,1.78+Math.sin(p.gesturePhase*5)*.12+baseY,-side.z*.46+fwd.z*.05);
+    }
+    return {baseY,hipL,hipR,shoulderL,shoulderR,footL,footR,handL,handR,head:P(0,headY,0),torso:P(0,1.08-crouch+baseY,0)};
+  }
+
+  function drawPerson(ctx,cam,w,h,p,showId,isMain) {
+    const pose=poseFor(p);
+    const pts={};
+    for(const [k,v] of Object.entries(pose)) if(typeof v==='object') pts[k]=project(cam,v,w,h);
+    if(!pts.head||!pts.torso||!pts.footL||!pts.footR)return null;
+    const height=Math.abs(((pts.footL.y+pts.footR.y)/2)-pts.head.y);
+    if(height<2 || height>800)return null;
+    const line=clamp(height*.13,1.2,18);
+    const headR=clamp(height*.11,1.6,18);
+    const foot=project(cam,{x:p.x,y:0,z:p.z},w,h);
+    if(foot){
+      ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(foot.x,foot.y,headR*1.1,headR*.34,0,0,TAU);ctx.fill();
+    }
+    const limb=(a,b,color,width=line*.58)=>{
+      if(!a||!b)return;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    };
+    limb(pts.hipL,pts.footL,p.pants);limb(pts.hipR,pts.footR,p.pants);
+    limb(pts.shoulderL,pts.handL,p.skin,line*.42);limb(pts.shoulderR,pts.handR,p.skin,line*.42);
+    limb(pts.shoulderL,pts.hipL,p.shirt,line);limb(pts.shoulderR,pts.hipR,p.shirt,line);
+    limb(pts.shoulderL,pts.shoulderR,p.shirt,line*.9);
+    ctx.fillStyle=p.skin;ctx.beginPath();ctx.arc(pts.head.x,pts.head.y,headR,0,TAU);ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=Math.max(1,headR*.12);ctx.stroke();
+
+    // Hat shapes provide visual variety without revealing the POV owner's own appearance.
+    ctx.fillStyle=p.hatColor;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=Math.max(1,headR*.1);
+    if(p.hat==='cap'){
+      ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.55,headR*.88,Math.PI,TAU);ctx.fill();
+      ctx.fillRect(pts.head.x,pts.head.y-headR*.64,headR*1.25,headR*.2);
+    } else if(p.hat==='cone'){
+      ctx.beginPath();ctx.moveTo(pts.head.x,pts.head.y-headR*2.1);ctx.lineTo(pts.head.x-headR*.85,pts.head.y-headR*.55);ctx.lineTo(pts.head.x+headR*.85,pts.head.y-headR*.55);ctx.closePath();ctx.fill();ctx.stroke();
+    } else if(p.hat==='halo'){
+      ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*1.55,headR*.9,headR*.28,0,0,TAU);ctx.strokeStyle=p.hatColor;ctx.lineWidth=Math.max(1,headR*.22);ctx.stroke();
+    } else if(p.hat==='square'){
+      ctx.fillRect(pts.head.x-headR*.72,pts.head.y-headR*1.55,headR*1.44,headR*.65);
     }
 
-    function moveAnt(x, y) {
-      const start = previous || { x: x, y: y };
-      const angle = Math.atan2(y - start.y, x - start.x) * 180 / Math.PI + 90;
+    if(showId){
+      const y=pts.head.y-headR*2.35;
+      const label=String(p.id);
+      ctx.font=`900 ${clamp(height*.12,9,16)}px system-ui`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      const tw=ctx.measureText(label).width;
+      const bg = p.solved ? 'rgba(29,140,84,.92)' : (p.target && state.frozen ? 'rgba(25,39,55,.9)' : 'rgba(3,9,15,.82)');
+      ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(pts.head.x-tw/2-5,y-8,tw+10,16,7);ctx.fill();
+      ctx.fillStyle=p.solved?'#bfffd8':'#fff';ctx.fillText(label,pts.head.x,y+.2);
+      if(p.solved){ctx.strokeStyle='#49e38b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pts.head.x,pts.head.y,headR*1.65,0,TAU);ctx.stroke();}
+    }
+    return {x:pts.torso.x,y:pts.torso.y,r:Math.max(10,height*.35),depth:pts.torso.z,id:p.id};
+  }
 
-      cursorAnt.style.transform =
-        "translate(" + x + "px," + y + "px) translate(-50%,-50%) rotate(" + angle + "deg)";
+  function renderMain() {
+    const {w,h}=resizeCanvas(mainCanvas,mainCtx);
+    const cam=mainCamera(w);
+    drawFloor(mainCtx,cam,w,h,false);
 
-      previous = { x: x, y: y };
+    const drawables=[];
+    for(const obj of state.landmarks){
+      const q=cameraSpace(cam,{x:obj.x,y:obj.height*.5,z:obj.z});
+      if(q.z>cam.near)drawables.push({depth:q.z,type:'landmark',obj});
+    }
+    for(const p of state.people){
+      const q=cameraSpace(cam,{x:p.x,y:1,z:p.z});
+      if(q.z>cam.near)drawables.push({depth:q.z,type:'person',obj:p});
+    }
+    drawables.sort((a,b)=>b.depth-a.depth);
+    state.picks=[];
+    for(const d of drawables){
+      if(d.type==='landmark') drawLandmark(mainCtx,cam,w,h,d.obj,true);
+      else {
+        const pick=drawPerson(mainCtx,cam,w,h,d.obj,true,true);
+        if(pick)state.picks.push(pick);
+      }
     }
 
-    if (finePointer) {
-      window.addEventListener("mousemove", function (event) {
-        if (inside(formSection, event.clientX, event.clientY)) {
-          cursorAnt.style.opacity = "0";
-          return;
-        }
+    // Compass / camera orientation.
+    mainCtx.save();
+    mainCtx.translate(w-42,44);
+    mainCtx.fillStyle='rgba(3,9,15,.72)';mainCtx.beginPath();mainCtx.arc(0,0,27,0,TAU);mainCtx.fill();
+    mainCtx.strokeStyle='rgba(255,255,255,.3)';mainCtx.stroke();
+    mainCtx.rotate(-state.camera.yaw);
+    mainCtx.fillStyle='#ff5d75';mainCtx.beginPath();mainCtx.moveTo(0,-19);mainCtx.lineTo(-6,5);mainCtx.lineTo(6,5);mainCtx.closePath();mainCtx.fill();
+    mainCtx.restore();
+    mainCtx.fillStyle='#fff';mainCtx.font='800 10px system-ui';mainCtx.textAlign='center';mainCtx.fillText('N',w-42,20);
+  }
 
-        const nearest = nearestPoint(event.clientX, event.clientY);
+  function renderPovPanel(panel,index) {
+    if(index>=state.povCount || panel.targetId<1)return;
+    const {w,h}=resizeCanvas(panel.canvas,panel.ctx);
+    const ctx=panel.ctx;
+    const person=state.people[panel.targetId-1];
+    const cam=povCamera(person,w);
+    drawFloor(ctx,cam,w,h,true);
 
-        if (nearest.point && nearest.distance <= 115) {
-          cursorAnt.style.opacity = "1";
-          moveAnt(nearest.point.x, nearest.point.y);
-        } else {
-          cursorAnt.style.opacity = "0";
-        }
-      });
-
-      window.addEventListener("mouseleave", function () {
-        cursorAnt.style.opacity = "0";
-      });
+    const drawables=[];
+    for(const obj of state.landmarks){
+      const q=cameraSpace(cam,{x:obj.x,y:obj.height*.5,z:obj.z});
+      if(q.z>cam.near && q.z<75)drawables.push({depth:q.z,type:'landmark',obj});
+    }
+    for(const p of state.people){
+      if(p.id===person.id)continue;
+      const q=cameraSpace(cam,{x:p.x,y:1,z:p.z});
+      if(q.z>cam.near && q.z<65)drawables.push({depth:q.z,type:'person',obj:p});
+    }
+    drawables.sort((a,b)=>b.depth-a.depth);
+    for(const d of drawables){
+      if(d.type==='landmark')drawLandmark(ctx,cam,w,h,d.obj,true);
+      else drawPerson(ctx,cam,w,h,d.obj,false,false);
     }
 
-    window.addEventListener("resize", rebuildSamples);
-    window.addEventListener("scroll", rebuildSamples, { passive: true });
-    window.addEventListener("load", rebuildSamples);
+    // Simple binocular eye mask and crosshair reinforce the eye-view concept.
+    const vignette=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.22,w/2,h/2,Math.max(w,h)*.72);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.52)');
+    ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(w/2-7,h/2);ctx.lineTo(w/2+7,h/2);ctx.moveTo(w/2,h/2-7);ctx.lineTo(w/2,h/2+7);ctx.stroke();
+    if(panel.solved){
+      ctx.fillStyle='rgba(20,95,56,.26)';ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='#d5ffe5';ctx.font=`900 ${Math.max(16,w*.06)}px system-ui`;ctx.textAlign='center';ctx.fillText(`PERSONA ${panel.targetId}`,w/2,h/2);
+    }
+  }
 
-    rebuildSamples();
-  </script>
+  function tick(now) {
+    let dt=Math.min(.05,(now-state.lastTime)/1000 || 0);
+    state.lastTime=now;
+    if(!state.frozen){
+      updatePeople(dt);
+      state.roundSeconds += dt;
+    }
+    if(state.messageTimer>0 && state.messageTimer<90000){
+      state.messageTimer-=dt*1000;
+      if(state.messageTimer<=0 && panels.slice(0,state.povCount).some(p=>!p.solved)){
+        showMessage(state.selectedPanel>=0 ? `POV ${panelLetters[state.selectedPanel]} selezionato: scegli la persona.` : 'Seleziona un riquadro POV, poi clicca una persona numerata.', '', 100000);
+      }
+    }
+    updateHud();
+    renderMain();
+    panels.forEach(renderPovPanel);
+    if (!TEST_MODE) requestAnimationFrame(tick);
+  }
+
+  mainCanvas.addEventListener('pointerdown', e=>{
+    ensureAudio();
+    state.drag.active=true;state.drag.moved=false;state.drag.x=e.clientX;state.drag.y=e.clientY;
+    mainCanvas.setPointerCapture(e.pointerId);mainCanvas.classList.add('dragging');
+  });
+  mainCanvas.addEventListener('pointermove', e=>{
+    if(!state.drag.active)return;
+    const dx=e.clientX-state.drag.x,dy=e.clientY-state.drag.y;
+    if(Math.hypot(dx,dy)>2)state.drag.moved=true;
+    state.camera.yaw-=dx*.006;
+    state.camera.pitch=clamp(state.camera.pitch+dy*.004,.25,1.18);
+    state.drag.x=e.clientX;state.drag.y=e.clientY;
+  });
+  mainCanvas.addEventListener('pointerup', e=>{
+    if(!state.drag.active)return;
+    if(!state.drag.moved){
+      const rect=mainCanvas.getBoundingClientRect();
+      const x=e.clientX-rect.left,y=e.clientY-rect.top;
+      let best=null,bestD=Infinity;
+      for(const p of state.picks){
+        const d=Math.hypot(x-p.x,y-p.y);
+        if(d<p.r && d<bestD){best=p;bestD=d;}
+      }
+      if(best)identifyPerson(best.id);
+    }
+    state.drag.active=false;mainCanvas.classList.remove('dragging');
+  });
+  mainCanvas.addEventListener('pointercancel',()=>{state.drag.active=false;mainCanvas.classList.remove('dragging');});
+  mainCanvas.addEventListener('wheel',e=>{
+    e.preventDefault();state.camera.distance=clamp(state.camera.distance+e.deltaY*.025,28,72);
+  },{passive:false});
+
+  freezeBtn.addEventListener('click',()=>{
+    ensureAudio();
+    state.frozen=!state.frozen;
+    freezeBtn.textContent=state.frozen?'Riavvia scena':'Blocca scena';
+    showMessage(state.frozen?'Scena bloccata: confronta con calma le visuali.':'Movimento riavviato.','');
+  });
+  newRoundBtn.addEventListener('click',()=>{ensureAudio();startRound();});
+  povCountSelect.addEventListener('change',()=>{
+    state.povCount=Number(povCountSelect.value);
+    startRound();
+  });
+  difficultySelect.addEventListener('change',()=>{
+    state.speedMultiplier=Number(difficultySelect.value);
+    showMessage(`Velocità impostata: ${difficultySelect.options[difficultySelect.selectedIndex].text}.`,'');
+  });
+
+  state.landmarks=createLandmarks();
+  resetPeople();
+  startRound();
+  requestAnimationFrame(tick);
+})();
+</script>
 </body>
 </html>
