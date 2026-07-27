@@ -2,1236 +2,583 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Di chi sono questi occhi?</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#81b7e8" />
+  <title>Atlante delle Nuvole — Esplorazione Pareidolica</title>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #07111f;
-      --panel: #0d1a2a;
-      --panel-2: #13243a;
-      --text: #edf6ff;
-      --muted: #9db0c7;
-      --accent: #ffd84a;
-      --good: #49e38b;
-      --bad: #ff5d75;
-      --line: rgba(255,255,255,.14);
+    :root{
+      --glass: rgba(8, 24, 47, .48);
+      --glass-strong: rgba(7, 20, 40, .72);
+      --line: rgba(255,255,255,.22);
+      --text: #f6fbff;
+      --muted: rgba(246,251,255,.72);
+      --accent: #ffe89b;
+      --ok: #9fffd1;
     }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% -20%, #17365e, var(--bg) 58%);
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#8bc2ef;color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+    #hud{position:fixed;inset:0;pointer-events:none}
+    .panel{
+      background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);box-shadow:0 12px 36px rgba(0,0,0,.18)
     }
-
-    button, select, input { font: inherit; }
-
-    #app {
-      height: 100%;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 10px;
-      padding: 10px;
+    #topbar{
+      position:absolute;left:16px;right:16px;top:16px;display:flex;justify-content:space-between;
+      gap:12px;align-items:flex-start
     }
-
-    .topbar {
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(7, 17, 31, .82);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 16px 50px rgba(0,0,0,.25);
+    #brand{padding:12px 14px;border-radius:16px;min-width:250px}
+    #brand h1{font-size:15px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px;font-weight:800}
+    #brand p{margin:0;color:var(--muted);font-size:12px}
+    #stats{display:grid;grid-template-columns:repeat(4,minmax(82px,1fr));gap:8px;padding:8px;border-radius:16px}
+    .stat{padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.07)}
+    .stat b{display:block;font-size:16px}.stat span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    #reticle{position:absolute;left:50%;top:50%;width:52px;height:52px;transform:translate(-50%,-50%)}
+    #reticle:before,#reticle:after{content:"";position:absolute;background:rgba(255,255,255,.82);
+      box-shadow:0 0 12px rgba(255,255,255,.45)}
+    #reticle:before{left:25px;top:8px;width:2px;height:36px}
+    #reticle:after{left:8px;top:25px;width:36px;height:2px}
+    #reticle i{position:absolute;inset:0;border:1px solid rgba(255,255,255,.38);border-radius:50%}
+    #reticle.lock i{border-color:var(--accent);box-shadow:0 0 24px rgba(255,232,155,.7)}
+    #compass{
+      position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+      padding:9px 14px;border-radius:999px;font-size:12px;letter-spacing:.12em;min-width:260px;text-align:center
     }
-
-    .title-wrap { min-width: 245px; }
-    h1 { margin: 0; font-size: clamp(17px, 2vw, 24px); line-height: 1.05; }
-    .subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
-
-    .stats {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
+    #log{
+      position:absolute;right:16px;top:112px;width:min(310px,calc(100vw - 32px));padding:12px;border-radius:16px;
+      max-height:210px;overflow:hidden
     }
-
-    .pill {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,255,255,.05);
-      padding: 7px 10px;
-      font-weight: 750;
-      font-size: 13px;
-      white-space: nowrap;
+    #log h2{font-size:11px;text-transform:uppercase;letter-spacing:.12em;margin:0 0 8px;color:var(--muted)}
+    #entries{display:grid;gap:7px}
+    .entry{font-size:12px;padding:8px 9px;background:rgba(255,255,255,.07);border-radius:10px}
+    .entry strong{color:var(--accent)}
+    #toast{
+      position:absolute;left:50%;top:27%;transform:translate(-50%,-50%) scale(.96);opacity:0;
+      padding:12px 18px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--line);
+      transition:.22s ease;font-weight:750;text-align:center;white-space:nowrap
     }
-    .pill span { color: var(--accent); }
-
-    .controls {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 7px;
-      flex-wrap: wrap;
+    #toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    #controls{
+      position:absolute;left:16px;bottom:18px;padding:11px 13px;border-radius:16px;font-size:11px;line-height:1.65;color:var(--muted)
     }
-
-    button, select, input {
-      min-height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      color: var(--text);
-      background: var(--panel-2);
-      padding: 7px 10px;
-      cursor: pointer;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    #controls b{color:var(--text)}
+    #actions{
+      position:absolute;right:16px;bottom:18px;display:flex;gap:9px;pointer-events:auto
     }
-    button:hover, select:hover, input:hover { border-color: rgba(255,255,255,.35); }
-    input[type=number] { width: 76px; cursor: text; }
-    button:active { transform: translateY(1px); }
-    button.primary { background: var(--accent); color: #171300; border-color: transparent; font-weight: 850; }
-
-    .workspace {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: minmax(420px, 1fr) minmax(330px, 42vw);
-      gap: 10px;
+    button{
+      appearance:none;border:1px solid var(--line);color:var(--text);background:var(--glass-strong);
+      backdrop-filter:blur(12px);border-radius:14px;padding:11px 14px;font-weight:750;cursor:pointer;
+      box-shadow:0 8px 24px rgba(0,0,0,.16)
     }
-
-    .main-card, .pov-card {
-      position: relative;
-      min-height: 0;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: #07111f;
-      box-shadow: 0 18px 60px rgba(0,0,0,.28);
+    button:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.42)}
+    button.active{color:#18304d;background:var(--accent)}
+    #intro{
+      position:fixed;inset:0;display:grid;place-items:center;padding:20px;background:
+      radial-gradient(circle at 50% 40%,rgba(255,255,255,.15),rgba(13,38,72,.54));z-index:10
     }
-
-    #mainCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
-      cursor: grab;
+    #introCard{width:min(640px,100%);padding:26px;border-radius:24px}
+    #intro h2{font-size:clamp(28px,6vw,58px);line-height:.98;margin:0 0 14px;letter-spacing:-.04em}
+    #intro p{color:var(--muted);font-size:15px;line-height:1.6;margin:0 0 18px}
+    #introGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+    #introGrid div{background:rgba(255,255,255,.07);padding:12px;border-radius:14px;font-size:12px}
+    #introGrid b{display:block;margin-bottom:4px}
+    #start{width:100%;font-size:15px;background:var(--accent);color:#17304d;border-color:transparent}
+    #mobileHint{display:none}
+    @media(max-width:760px){
+      #topbar{left:10px;right:10px;top:10px}
+      #brand{min-width:0;max-width:52vw}
+      #brand p{display:none}
+      #stats{grid-template-columns:repeat(2,72px)}
+      .stat{padding:6px 8px}.stat b{font-size:13px}.stat span{font-size:8px}
+      #log{top:102px;right:10px;width:240px;max-height:146px}
+      #controls{display:none}
+      #actions{right:10px;bottom:14px}
+      #compass{bottom:74px;min-width:210px}
+      #introGrid{grid-template-columns:1fr}
+      #mobileHint{display:block}
     }
-    #mainCanvas.dragging { cursor: grabbing; }
-
-    .main-hint {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      max-width: min(540px, calc(100% - 24px));
-      padding: 9px 11px;
-      border-radius: 11px;
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(5,12,22,.82);
-      color: #dce8f6;
-      font-size: 12px;
-      line-height: 1.35;
-      pointer-events: none;
-      backdrop-filter: blur(7px);
-    }
-
-    #message {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      max-width: calc(100% - 24px);
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(5,12,22,.86);
-      color: var(--text);
-      font-weight: 800;
-      font-size: 13px;
-      text-align: center;
-      pointer-events: none;
-      backdrop-filter: blur(8px);
-      transition: opacity .2s ease, transform .2s ease;
-    }
-    #message.good { color: var(--good); border-color: rgba(73,227,139,.55); }
-    #message.bad { color: var(--bad); border-color: rgba(255,93,117,.55); }
-
-    .pov-card {
-      display: grid;
-      grid-template-rows: auto minmax(0,1fr);
-      padding: 10px;
-      gap: 8px;
-      background: linear-gradient(180deg, rgba(19,36,58,.95), rgba(8,19,32,.98));
-    }
-
-    .pov-header {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2px;
-    }
-    .pov-header strong { font-size: 14px; }
-    .pov-header small { color: var(--muted); }
-
-    #povGrid {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      grid-template-rows: repeat(3, minmax(0,1fr));
-      gap: 8px;
-    }
-
-    .pov-wrap {
-      position: relative;
-      min-height: 0;
-      overflow: hidden;
-      border: 2px solid rgba(255,255,255,.12);
-      border-radius: 13px;
-      background: #0c1a2b;
-      cursor: pointer;
-      transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
-    }
-    .pov-wrap:hover { border-color: rgba(255,255,255,.32); }
-    .pov-wrap.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255,216,74,.16), 0 12px 30px rgba(0,0,0,.25);
-      transform: translateY(-1px);
-    }
-    .pov-wrap.solved { border-color: var(--good); }
-    .pov-wrap.wrong { animation: shake .28s linear; border-color: var(--bad); }
-    .pov-wrap.hidden { display: none; }
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
-    }
-
-    .pov-wrap canvas { width: 100%; height: 100%; display: block; }
-    .pov-label {
-      position: absolute;
-      top: 7px;
-      left: 7px;
-      z-index: 2;
-      min-width: 28px;
-      padding: 4px 7px;
-      border-radius: 999px;
-      background: rgba(2,7,13,.76);
-      border: 1px solid rgba(255,255,255,.15);
-      color: white;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .04em;
-      pointer-events: none;
-    }
-    .pov-state {
-      position: absolute;
-      inset: auto 7px 7px 7px;
-      padding: 5px 7px;
-      border-radius: 8px;
-      background: rgba(2,7,13,.72);
-      color: #e9f3ff;
-      font-size: 10px;
-      text-align: center;
-      pointer-events: none;
-    }
-    .pov-wrap.solved .pov-state { color: var(--good); font-weight: 850; }
-
-    .select-label {
-      color: var(--muted);
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    @media (max-width: 900px) {
-      body { overflow: auto; }
-      #app { height: auto; min-height: 100%; }
-      .topbar { align-items: flex-start; flex-wrap: wrap; }
-      .controls { margin-left: 0; justify-content: flex-start; }
-      .workspace { grid-template-columns: 1fr; grid-template-rows: 58vh 70vh; }
-      .title-wrap { min-width: 0; width: 100%; }
-    }
-
-    @media (max-width: 560px) {
-      #app { padding: 6px; gap: 6px; }
-      .workspace { gap: 6px; grid-template-rows: 58vh 112vh; }
-      #povGrid { grid-template-columns: 1fr; grid-template-rows: repeat(6, minmax(150px,1fr)); }
-      .pov-card { overflow: auto; }
-    }
-
-
-    .setup-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background: radial-gradient(circle at 50% 15%, rgba(42,82,123,.62), rgba(2,8,14,.93));
-      backdrop-filter: blur(12px);
-    }
-    .setup-overlay.hidden { display: none; }
-    .setup-panel {
-      width: min(560px, 100%);
-      padding: 26px;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(19,36,58,.98), rgba(7,17,31,.98));
-      box-shadow: 0 30px 100px rgba(0,0,0,.5);
-    }
-    .setup-panel h2 { margin: 0 0 8px; font-size: clamp(24px,5vw,36px); }
-    .setup-panel > p { margin: 0 0 22px; color: var(--muted); line-height: 1.5; }
-    .setup-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
-    .setup-field {
-      display: grid;
-      gap: 7px;
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
-    }
-    .setup-field input, .setup-field select { width: 100%; }
-    .setup-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-    .realism-note {
-      margin-top: 16px;
-      padding: 11px 12px;
-      border-radius: 12px;
-      background: rgba(73,227,139,.08);
-      border: 1px solid rgba(73,227,139,.2);
-      color: #c9f9dd;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-    @media (max-width: 620px) {
-      .setup-grid { grid-template-columns: 1fr; }
-      .setup-panel { padding: 18px; }
-    }
-
   </style>
 </head>
 <body>
-<div id="app">
-  <header class="topbar">
-    <div class="title-wrap">
-      <h1>Di chi sono questi occhi?</h1>
-      <div class="subtitle">Osserva la piazza e abbina ogni visuale in prima persona al personaggio giusto.</div>
+<canvas id="world"></canvas>
+
+<div id="hud">
+  <div id="topbar">
+    <div id="brand" class="panel">
+      <h1>Atlante delle Nuvole</h1>
+      <p>Esplora uno spazio procedurale e cataloga ciò che la tua mente riconosce.</p>
     </div>
-
-    <div class="stats">
-      <div class="pill">Round <span id="roundStat">1</span></div>
-      <div class="pill">Punti <span id="scoreStat">0</span></div>
-      <div class="pill">Rimasti <span id="leftStat">6</span></div>
-      <div class="pill">Tempo <span id="timeStat">0:00</span></div>
+    <div id="stats" class="panel">
+      <div class="stat"><b id="speedRead">0</b><span>velocità</span></div>
+      <div class="stat"><b id="modeRead">MAN</b><span>pilota</span></div>
+      <div class="stat"><b id="scoreRead">0</b><span>punti</span></div>
+      <div class="stat"><b id="seenRead">0</b><span>settori</span></div>
     </div>
+  </div>
 
-    <div class="controls">
-      <label class="select-label">Persone
-        <input id="peopleCountInput" type="number" min="12" max="100" step="1" value="50" aria-label="Numero di persone nella partita">
-      </label>
-      <label class="select-label">POV
-        <select id="povCountSelect" aria-label="Numero di visuali">
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6" selected>6</option>
-        </select>
-      </label>
-      <label class="select-label">Movimento
-        <select id="difficultySelect" aria-label="Velocità del movimento">
-          <option value="0.55">Calmo</option>
-          <option value="1" selected>Normale</option>
-          <option value="1.55">Caotico</option>
-        </select>
-      </label>
-      <button id="freezeBtn">Blocca scena</button>
-      <button id="settingsBtn">Imposta partita</button>
-      <button id="newRoundBtn" class="primary">Nuovo round</button>
-    </div>
-  </header>
+  <div id="reticle"><i></i></div>
+  <div id="toast"></div>
 
-  <main class="workspace">
-    <section class="main-card">
-      <canvas id="mainCanvas" aria-label="Piazza tridimensionale con personaggi"></canvas>
-      <div id="message">Seleziona un riquadro POV, poi clicca una persona numerata.</div>
-      <div class="main-hint">
-        <strong>Comandi:</strong> trascina per ruotare la telecamera, usa la rotellina per zoomare. I numeri identificano tutte le persone presenti. I punti di riferimento colorati aiutano a ricostruire la posizione di chi sta guardando.
-      </div>
-    </section>
+  <div id="log" class="panel">
+    <h2>Catalogo pareidolie</h2>
+    <div id="entries"><div class="entry">Centra una nube e premi <strong>Spazio</strong>.</div></div>
+  </div>
 
-    <aside class="pov-card">
-      <div class="pov-header">
-        <strong>Visuali dagli occhi</strong>
-        <small id="selectionText">Nessun POV selezionato</small>
-      </div>
-      <div id="povGrid"></div>
-    </aside>
-  </main>
+  <div id="controls" class="panel">
+    <b>WASD</b> movimento · <b>Q/E</b> rotazione · <b>R/F</b> quota<br>
+    <b>Mouse trascinato</b> sguardo · <b>P</b> autopilota · <b>1–4</b> velocità · <b>Spazio</b> segna
+  </div>
+
+  <div id="compass" class="panel">N · 000° · X 0 · Z 0</div>
+
+  <div id="actions">
+    <button id="autoBtn">Autopilota</button>
+    <button id="speedBtn">Velocità ×1</button>
+    <button id="markBtn">Segna visione</button>
+  </div>
 </div>
 
-
-<div id="setupOverlay" class="setup-overlay">
-  <section class="setup-panel" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
-    <h2 id="setupTitle">Imposta la partita</h2>
-    <p>Scegli la densità della piazza e quante visuali dagli occhi vuoi riconoscere.</p>
-    <div class="setup-grid">
-      <label class="setup-field">Persone nella piazza
-        <input id="setupPeopleCount" type="number" min="12" max="100" step="1" value="50">
-      </label>
-      <label class="setup-field">Visuali POV
-        <select id="setupPovCount">
-          <option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6" selected>6</option>
-        </select>
-      </label>
-      <label class="setup-field">Andatura
-        <select id="setupDifficulty">
-          <option value="0.55">Calma</option><option value="1" selected>Normale</option><option value="1.55">Affollata</option>
-        </select>
-      </label>
+<div id="intro">
+  <div id="introCard" class="panel">
+    <h2>Trova forme<br>tra le nuvole.</h2>
+    <p>
+      Ogni settore nasce mentre viaggi nello spazio X/Z. I cumuli sono procedurali:
+      alcuni suggeriscono volti, creature, architetture o veicoli; altri restano ambigui.
+    </p>
+    <div id="introGrid">
+      <div><b>Esplora</b>Muoviti liberamente oppure lascia guidare l’autopilota.</div>
+      <div><b>Osserva</b>Trascina il mouse per cambiare direzione e inquadrare una nube.</div>
+      <div><b>Riconosci</b>Premi Spazio quando una forma ti sembra significativa.</div>
     </div>
-    <div class="realism-note">Scala fisica: piazza di 50 × 50 metri, persone alte circa 1,58–1,91 m, occhi alla corretta altezza e campo visivo prospettico coerente con il formato di ogni riquadro.</div>
-    <div class="setup-actions"><button id="startGameBtn" class="primary">Avvia partita</button></div>
-  </section>
+    <p id="mobileHint">Su schermo touch, trascina per guardare e usa i tre pulsanti in basso.</p>
+    <button id="start">Entra nello spazio nuvoloso</button>
+  </div>
 </div>
 
 <script>
 (() => {
-  'use strict';
+  "use strict";
 
-  const TEST_MODE = new URLSearchParams(location.search).has('test');
-  const TAU = Math.PI * 2;
-  const WORLD = 25;
-  const MIN_PEOPLE = 12;
-  const MAX_PEOPLE = 100;
-  const COLORS = [
-    '#ff5f6d','#ffd166','#06d6a0','#4cc9f0','#9b5de5',
-    '#f15bb5','#fca311','#8ac926','#00bbf9','#e76f51',
-    '#c77dff','#70e000','#ff8fab','#48cae4','#fb8500'
-  ];
-  const SKINS = ['#f5c7a9','#dca57a','#b97850','#8d5524','#6f3f27','#ffd2b8'];
-  const HATS = ['none','none','cap','beanie','brim'];
-  const GESTURES = ['walk','wave','jump','spin','crouch'];
-
-  const mainCanvas = document.getElementById('mainCanvas');
-  const mainCtx = mainCanvas.getContext('2d');
-  const povGrid = document.getElementById('povGrid');
-  const messageEl = document.getElementById('message');
-  const roundStat = document.getElementById('roundStat');
-  const scoreStat = document.getElementById('scoreStat');
-  const leftStat = document.getElementById('leftStat');
-  const timeStat = document.getElementById('timeStat');
-  const selectionText = document.getElementById('selectionText');
-  const freezeBtn = document.getElementById('freezeBtn');
-  const newRoundBtn = document.getElementById('newRoundBtn');
-  const povCountSelect = document.getElementById('povCountSelect');
-  const difficultySelect = document.getElementById('difficultySelect');
-  const peopleCountInput = document.getElementById('peopleCountInput');
-  const settingsBtn = document.getElementById('settingsBtn');
-  const setupOverlay = document.getElementById('setupOverlay');
-  const setupPeopleCount = document.getElementById('setupPeopleCount');
-  const setupPovCount = document.getElementById('setupPovCount');
-  const setupDifficulty = document.getElementById('setupDifficulty');
-  const startGameBtn = document.getElementById('startGameBtn');
-
-  const panelLetters = ['A','B','C','D','E','F'];
-  const panels = [];
-  for (let i = 0; i < 6; i++) {
-    const wrap = document.createElement('div');
-    wrap.className = 'pov-wrap';
-    wrap.dataset.index = String(i);
-    const canvas = document.createElement('canvas');
-    const label = document.createElement('div');
-    label.className = 'pov-label';
-    label.textContent = `POV ${panelLetters[i]}`;
-    const state = document.createElement('div');
-    state.className = 'pov-state';
-    state.textContent = 'Seleziona questo riquadro';
-    wrap.append(canvas, label, state);
-    povGrid.appendChild(wrap);
-    panels.push({ wrap, canvas, ctx: canvas.getContext('2d'), state, targetId: -1, solved: false });
-    wrap.addEventListener('click', () => selectPanel(i));
-  }
-
-  const state = {
-    people: [],
-    peopleCount: 50,
-    landmarks: [],
-    round: 0,
-    score: 0,
-    selectedPanel: -1,
-    povCount: 6,
-    frozen: false,
-    speedMultiplier: 1,
-    roundSeconds: 0,
-    lastTime: performance.now(),
-    picks: [],
-    camera: { yaw: 0.08, pitch: 0.55, distance: 52, target: {x:0,y:0,z:0} },
-    drag: { active:false, moved:false, x:0, y:0 },
-    messageTimer: 0,
-    audio: null
+  const canvas = document.getElementById("world");
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const ui = {
+    speed: document.getElementById("speedRead"),
+    mode: document.getElementById("modeRead"),
+    score: document.getElementById("scoreRead"),
+    seen: document.getElementById("seenRead"),
+    compass: document.getElementById("compass"),
+    reticle: document.getElementById("reticle"),
+    toast: document.getElementById("toast"),
+    entries: document.getElementById("entries"),
+    intro: document.getElementById("intro"),
+    start: document.getElementById("start"),
+    autoBtn: document.getElementById("autoBtn"),
+    speedBtn: document.getElementById("speedBtn"),
+    markBtn: document.getElementById("markBtn")
   };
 
-  const rand = (a=0,b=1) => a + Math.random() * (b-a);
-  const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
-  const lerp = (a,b,t) => a + (b-a)*t;
-  const hypot3 = (x,y,z) => Math.hypot(x,y,z);
-  const normalize3 = (v) => {
-    const d = hypot3(v.x,v.y,v.z) || 1;
-    return {x:v.x/d,y:v.y/d,z:v.z/d};
+  let W = innerWidth, H = innerHeight, DPR = Math.min(devicePixelRatio || 1, 1.65);
+  let focal = 900;
+  let running = false;
+  let last = performance.now();
+  let now = 0;
+  let score = 0;
+  let sectorsSeen = new Set();
+  let speedIndex = 0;
+  const speedLevels = [55, 110, 220, 430];
+  let autoPilot = false;
+  let toastTimer = 0;
+  let markCooldown = 0;
+  let pointerDown = false;
+  let pointerX = 0, pointerY = 0;
+  const keys = Object.create(null);
+
+  const camera = {
+    x: 0, y: 120, z: 0,
+    heading: 0, pitch: -0.03,
+    vx: 0, vy: 0, vz: 0
   };
-  const dot3 = (a,b) => a.x*b.x+a.y*b.y+a.z*b.z;
-  const cross3 = (a,b) => ({x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x});
-  const angleDiff = (a,b) => Math.atan2(Math.sin(b-a), Math.cos(b-a));
 
-  function choose(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
-  function shuffled(arr) {
-    const out = [...arr];
-    for (let i=out.length-1;i>0;i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      [out[i],out[j]] = [out[j],out[i]];
-    }
-    return out;
+  const CHUNK = 620;
+  const CHUNK_RADIUS = 3;
+  const CLOUDS_PER_CHUNK = 4;
+  const MAX_DISTANCE = CHUNK * (CHUNK_RADIUS + 1.35);
+  const chunkCache = new Map();
+  const shapeNames = ["volto", "balena", "castello", "drago", "astronave", "isola", "creatura", "figura ambigua"];
+
+  function resize() {
+    W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio || 1, 1.65);
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    focal = Math.min(W, H) * 1.08;
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  function hash2(x, z) {
+    let h = Math.imul(x ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(z ^ 0xc2b2ae35, 0x27d4eb2f);
+    h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d); h ^= h >>> 12;
+    return h >>> 0;
   }
 
-  function resizeCanvas(canvas, ctx) {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.round(rect.width));
-    const h = Math.max(1, Math.round(rect.height));
-    const pw = Math.round(w*dpr), ph = Math.round(h*dpr);
-    if (canvas.width !== pw || canvas.height !== ph) {
-      canvas.width = pw; canvas.height = ph;
-    }
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    return {w,h,dpr};
-  }
-
-  function createLandmarks() {
-    const L = [];
-    L.push({type:'fountain', x:0,z:0, size:3.2, height:2.8, color:'#35b7ff', label:'FONTANA'});
-    L.push({type:'pillar', x:-19,z:-19, size:1.6, height:7.5, color:'#ff3d57', label:'TORRE ROSSA'});
-    L.push({type:'pillar', x:19,z:-19, size:1.6, height:7.5, color:'#ffd43b', label:'TORRE GIALLA'});
-    L.push({type:'pillar', x:-19,z:19, size:1.6, height:7.5, color:'#32d583', label:'TORRE VERDE'});
-    L.push({type:'pillar', x:19,z:19, size:1.6, height:7.5, color:'#9d6cff', label:'TORRE VIOLA'});
-    L.push({type:'stage', x:0,z:20, size:7, height:1.4, color:'#ff8a3d', label:'PALCO'});
-    L.push({type:'arch', x:0,z:-23, size:5.5, height:5.8, color:'#78a6d8', label:'PORTA NORD'});
-    L.push({type:'arch', x:23,z:0, size:5.5, height:5.8, color:'#78a6d8', label:'PORTA EST'});
-    const trees = [
-      [-12,-4],[-14,5],[-8,13],[9,-12],[13,-6],[12,8],[-5,-14],[5,14]
-    ];
-    trees.forEach((p,i)=>L.push({type:'tree',x:p[0],z:p[1],size:2.2,height:5+((i%3)*.4),color:'#28a96b',label:''}));
-    const benches = [[-7,-8,0],[7,8,Math.PI],[-10,11,1.4],[11,-10,-1.7]];
-    benches.forEach(p=>L.push({type:'bench',x:p[0],z:p[1],heading:p[2],size:2.4,height:1.0,color:'#b77a48',label:''}));
-    return L;
-  }
-
-  function spawnPerson(id) {
-    let x,z;
-    do {
-      x = rand(-WORLD+2, WORLD-2);
-      z = rand(-WORLD+2, WORLD-2);
-    } while (Math.hypot(x,z) < 4.5);
-    return {
-      id,
-      x,z,
-      goalX: rand(-WORLD+2, WORLD-2),
-      goalZ: rand(-WORLD+2, WORLD-2),
-      heading: rand(0,TAU),
-      viewHeading: 0,
-      speed: rand(.82,1.48),
-      height: rand(1.58,1.91),
-      shoulderScale: rand(.88,1.12),
-      bodyScale: rand(.88,1.13),
-      hair: choose(['#17120f','#34251d','#5b3a24','#8a5a32','#d3b37b','#23252b']),
-      hairStyle: Math.floor(rand(0,4)),
-      shoes: choose(['#15191f','#eceff2','#6c432e','#253552']),
-      turnSpeed: rand(1.6,2.5),
-      shirt: COLORS[id % COLORS.length],
-      pants: id % 3 === 0 ? '#24324b' : (id % 3 === 1 ? '#394a5f' : '#4c3a50'),
-      skin: SKINS[id % SKINS.length],
-      hat: HATS[id % HATS.length],
-      hatColor: COLORS[(id*7+3)%COLORS.length],
-      gesture: 'walk',
-      gestureTimer: rand(1.2,5.5),
-      gesturePhase: rand(0,TAU),
-      walkPhase: rand(0,TAU),
-      stride: 0,
-      target: false,
-      solved: false
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
 
-  function resetPeople() {
-    state.people = Array.from({length:state.peopleCount}, (_,i)=>spawnPerson(i+1));
-    separateInitialSpawns();
+  function gaussian(rand) {
+    let u = 0, v = 0;
+    while (!u) u = rand();
+    while (!v) v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   }
 
-  function separateInitialSpawns() {
-    for (let pass=0; pass<7; pass++) {
-      for (let i=0; i<state.people.length; i++) {
-        const a=state.people[i];
-        for (let j=i+1; j<state.people.length; j++) {
-          const b=state.people[j];
-          let dx=a.x-b.x, dz=a.z-b.z;
-          let d=Math.hypot(dx,dz);
-          if (d<0.72) {
-            if (d<.001) { dx=rand(-1,1); dz=rand(-1,1); d=Math.hypot(dx,dz); }
-            const push=(0.72-d)*.52;
-            dx/=d; dz/=d;
-            a.x=clamp(a.x+dx*push,-WORLD+1,WORLD-1); a.z=clamp(a.z+dz*push,-WORLD+1,WORLD-1);
-            b.x=clamp(b.x-dx*push,-WORLD+1,WORLD-1); b.z=clamp(b.z-dz*push,-WORLD+1,WORLD-1);
-          }
-        }
-      }
-    }
-  }
-
-  function applyGameSettings(peopleCount, povCount, speed) {
-    state.peopleCount = clamp(Math.round(Number(peopleCount) || 50), MIN_PEOPLE, MAX_PEOPLE);
-    state.povCount = clamp(Math.round(Number(povCount) || 6), 3, Math.min(6,state.peopleCount));
-    state.speedMultiplier = Number(speed) || 1;
-    peopleCountInput.value = String(state.peopleCount);
-    povCountSelect.value = String(state.povCount);
-    difficultySelect.value = String(state.speedMultiplier);
-    setupPeopleCount.value = String(state.peopleCount);
-    setupPovCount.value = String(state.povCount);
-    setupDifficulty.value = String(state.speedMultiplier);
-    state.score = 0; state.round = 0; state.frozen = false; freezeBtn.textContent='Blocca scena';
-    resetPeople();
-    startRound();
-  }
-
-  function startRound() {
-    state.round++;
-    state.roundSeconds = 0;
-    state.selectedPanel = -1;
-    state.messageTimer = 0;
-    state.people.forEach(p => { p.target=false; p.solved=false; });
-    const ids = shuffled(state.people.map(p=>p.id)).slice(0,state.povCount);
-    const focusPoints=[{x:0,z:0},{x:0,z:18},{x:-12,z:-3},{x:12,z:5},{x:0,z:-17},{x:-7,z:9}];
-    ids.forEach((id,i)=>{
-      const person=state.people[id-1],focus=focusPoints[i%focusPoints.length];
-      person.target=true;
-      person.goalX=clamp(focus.x+rand(-2.2,2.2),-WORLD+2,WORLD-2);
-      person.goalZ=clamp(focus.z+rand(-2.2,2.2),-WORLD+2,WORLD-2);
-      person.heading=Math.atan2(person.goalX-person.x,person.goalZ-person.z);
-      person.viewHeading=person.heading;
-    });
-    povGrid.style.gridTemplateRows=state.povCount<=4?'repeat(2,minmax(0,1fr))':'repeat(3,minmax(0,1fr))';
-    panels.forEach((panel,i) => {
-      panel.targetId = i < state.povCount ? ids[i] : -1;
-      panel.solved = false;
-      panel.wrap.classList.toggle('hidden', i >= state.povCount);
-      panel.wrap.classList.remove('selected','solved','wrong');
-      panel.state.textContent = i < state.povCount ? 'Seleziona questo riquadro' : '';
-    });
-    showMessage('Seleziona un riquadro POV, poi clicca una persona numerata.', '');
-    updateHud();
-  }
-
-  function selectPanel(index) {
-    if (index >= state.povCount || panels[index].solved) return;
-    ensureAudio();
-    state.selectedPanel = index;
-    panels.forEach((p,i)=>p.wrap.classList.toggle('selected', i===index && !p.solved));
-    selectionText.textContent = `Selezionato: POV ${panelLetters[index]}`;
-    showMessage(`POV ${panelLetters[index]} selezionato: scegli la persona nella piazza.`, '');
-  }
-
-  function identifyPerson(personId) {
-    if (state.selectedPanel < 0) {
-      showMessage('Prima seleziona uno dei riquadri POV.', 'bad');
-      playTone(false);
-      return;
-    }
-    const panel = panels[state.selectedPanel];
-    if (panel.solved) return;
-    if (personId === panel.targetId) {
-      panel.solved = true;
-      panel.wrap.classList.remove('selected');
-      panel.wrap.classList.add('solved');
-      panel.state.textContent = `Corretto: persona ${personId}`;
-      state.people[personId-1].solved = true;
-      const speedBonus = Math.max(0, 120 - Math.floor(state.roundSeconds*2));
-      state.score += 100 + speedBonus;
-      showMessage(`Esatto! Il POV ${panelLetters[state.selectedPanel]} appartiene alla persona ${personId}. +${100+speedBonus}`, 'good');
-      playTone(true);
-      state.selectedPanel = -1;
-      selectionText.textContent = 'Nessun POV selezionato';
-      const left = panels.slice(0,state.povCount).filter(p=>!p.solved).length;
-      if (left === 0) {
-        state.score += 250;
-        showMessage('Round completato! Bonus +250. Premi “Nuovo round”.', 'good', 100000);
-      }
+  function templatePoints(type, rand) {
+    const pts = [];
+    const push = (x, y, z=0, r=1) => pts.push({x,y,z,r});
+    if (type === "volto") {
+      [[-1.25,.25,0,1.15],[1.25,.25,0,1.15],[0,0,0,1.55],[-.55,-.85,0,.75],[.55,-.85,0,.75],
+       [-1.8,-.25,.1,.7],[1.8,-.25,-.1,.7],[0,1.05,.1,1.05]].forEach(p=>push(...p));
+    } else if (type === "balena") {
+      for(let i=-3;i<=2;i++) push(i*.65, Math.sin(i*.65)*.18, gaussian(rand)*.12, 1.2-(Math.abs(i)*.08));
+      push(2.35,.45,0,.72); push(2.7,.9,0,.56); push(2.65,-.05,0,.55);
+      push(-2.35,.75,0,.62); push(-2.5,1.25,0,.48);
+    } else if (type === "castello") {
+      for(let i=-2;i<=2;i++) push(i*.82,-.55,gaussian(rand)*.08,1.05);
+      [-1.7,0,1.7].forEach((x,idx)=>{push(x,.35,0,.86); push(x,1.12,0,.62);});
+      push(0,.25,0,1.1); push(0,.95,0,.72);
+    } else if (type === "drago") {
+      for(let i=0;i<8;i++) push(-2.5+i*.65, Math.sin(i*.72)*.62, gaussian(rand)*.15, .78+(i%3)*.12);
+      push(1.95,.8,0,.8); push(2.5,1.15,0,.55); push(-.4,1.45,.1,.85); push(.35,1.6,-.1,.75);
+    } else if (type === "astronave") {
+      for(let i=0;i<10;i++){ const a=i/10*Math.PI*2; push(Math.cos(a)*2.15, Math.sin(a)*.55,0,.62); }
+      push(0,.2,0,1.6); push(0,.95,0,.78);
+    } else if (type === "isola") {
+      for(let i=0;i<10;i++) push((i-4.5)*.48, -Math.abs(i-4.5)*.08, gaussian(rand)*.15, .82+rand()*.35);
+      push(-.8,.8,0,.72); push(.2,1.15,0,.6); push(1.1,.7,0,.68);
     } else {
-      state.score = Math.max(0, state.score - 25);
-      panel.wrap.classList.remove('wrong');
-      void panel.wrap.offsetWidth;
-      panel.wrap.classList.add('wrong');
-      showMessage(`Persona ${personId}: scelta errata. -25`, 'bad');
-      playTone(false);
+      const n = 11 + Math.floor(rand()*7);
+      for(let i=0;i<n;i++) push(gaussian(rand)*1.45, gaussian(rand)*.72, gaussian(rand)*.28, .65+rand()*.75);
     }
-    updateHud();
+    return pts;
   }
 
-  function updateHud() {
-    roundStat.textContent = String(state.round);
-    scoreStat.textContent = String(state.score);
-    const left = panels.slice(0,state.povCount).filter(p=>!p.solved).length;
-    leftStat.textContent = String(left);
-    const mins = Math.floor(state.roundSeconds/60);
-    const secs = Math.floor(state.roundSeconds%60).toString().padStart(2,'0');
-    timeStat.textContent = `${mins}:${secs}`;
-  }
+  function generateChunk(cx, cz) {
+    const key = cx + "," + cz;
+    if (chunkCache.has(key)) return chunkCache.get(key);
+    const rand = mulberry32(hash2(cx, cz));
+    const clouds = [];
 
-  function showMessage(text, kind='', duration=2200) {
-    messageEl.textContent = text;
-    messageEl.className = kind;
-    state.messageTimer = duration;
-  }
+    for (let i=0; i<CLOUDS_PER_CHUNK; i++) {
+      const type = shapeNames[Math.floor(rand()*shapeNames.length)];
+      const scale = 24 + rand()*28;
+      const center = {
+        x: (cx + rand()) * CHUNK,
+        y: 45 + rand()*300,
+        z: (cz + rand()) * CHUNK
+      };
+      const yaw = rand()*Math.PI*2;
+      const c = Math.cos(yaw), s = Math.sin(yaw);
+      let pts = templatePoints(type, rand);
 
-  function ensureAudio() {
-    if (!state.audio) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) state.audio = new AC();
+      for (let k=0; k<5 + Math.floor(rand()*5); k++) {
+        pts.push({x:gaussian(rand)*1.65,y:gaussian(rand)*.82,z:gaussian(rand)*.3,r:.55+rand()*.8});
+      }
+
+      const lobes = pts.map((p, index) => {
+        const lx = p.x*scale, lz = p.z*scale;
+        return {
+          x: center.x + lx*c - lz*s,
+          y: center.y + p.y*scale,
+          z: center.z + lx*s + lz*c,
+          r: p.r*scale*(.74+rand()*.38),
+          a: .21 + rand()*.16,
+          shade: index % 5
+        };
+      });
+
+      clouds.push({
+        id: key + ":" + i,
+        type,
+        x:center.x, y:center.y, z:center.z,
+        radius: scale*3.2,
+        lobes
+      });
     }
-    if (state.audio?.state === 'suspended') state.audio.resume();
+
+    chunkCache.set(key, clouds);
+    if (chunkCache.size > 180) {
+      const first = chunkCache.keys().next().value;
+      chunkCache.delete(first);
+    }
+    return clouds;
   }
 
-  function playTone(ok) {
-    ensureAudio();
-    if (!state.audio) return;
-    const t = state.audio.currentTime;
-    const osc = state.audio.createOscillator();
-    const gain = state.audio.createGain();
-    osc.type = ok ? 'sine' : 'square';
-    osc.frequency.setValueAtTime(ok ? 520 : 180, t);
-    if (ok) osc.frequency.exponentialRampToValueAtTime(780, t+.12);
-    else osc.frequency.exponentialRampToValueAtTime(120, t+.12);
-    gain.gain.setValueAtTime(.0001,t);
-    gain.gain.exponentialRampToValueAtTime(.11,t+.015);
-    gain.gain.exponentialRampToValueAtTime(.0001,t+.18);
-    osc.connect(gain).connect(state.audio.destination);
-    osc.start(t); osc.stop(t+.19);
-  }
-
-  function updatePeople(dt) {
-    const speedMul = state.speedMultiplier;
-    const avoid = state.people.map(()=>({x:0,z:0}));
-    for (let i=0;i<state.people.length;i++) {
-      const a=state.people[i];
-      for (let j=i+1;j<state.people.length;j++) {
-        const b=state.people[j];
-        const dx=a.x-b.x,dz=a.z-b.z,d=Math.hypot(dx,dz);
-        if (d>0 && d<1.35) {
-          const force=(1.35-d)/1.35;
-          const nx=dx/d,nz=dz/d;
-          avoid[i].x+=nx*force; avoid[i].z+=nz*force;
-          avoid[j].x-=nx*force; avoid[j].z-=nz*force;
+  function activeClouds() {
+    const ccx = Math.floor(camera.x/CHUNK);
+    const ccz = Math.floor(camera.z/CHUNK);
+    const all = [];
+    for(let dz=-CHUNK_RADIUS; dz<=CHUNK_RADIUS; dz++){
+      for(let dx=-CHUNK_RADIUS; dx<=CHUNK_RADIUS; dx++){
+        const kx=ccx+dx, kz=ccz+dz;
+        sectorsSeen.add(kx+","+kz);
+        const clouds = generateChunk(kx,kz);
+        for(const cloud of clouds){
+          const d = Math.hypot(cloud.x-camera.x, cloud.z-camera.z);
+          if(d < MAX_DISTANCE) all.push(cloud);
         }
       }
     }
-    for (let i=0;i<state.people.length;i++) {
-      const p=state.people[i];
-      p.gestureTimer -= dt;
-      if (p.gestureTimer <= 0) {
-        p.gesture = choose(GESTURES);
-        p.gestureTimer = p.gesture === 'walk' ? rand(2.2,5.2) : rand(1.2,2.8);
-        p.gesturePhase = 0;
-      }
-      p.gesturePhase += dt * (p.gesture === 'spin' ? 3.4 : 2.45);
-      let dx=p.goalX-p.x, dz=p.goalZ-p.z;
-      const dist=Math.hypot(dx,dz);
-      if (dist<1.2 || Math.random()<.00045) {
-        p.goalX=rand(-WORLD+2,WORLD-2); p.goalZ=rand(-WORLD+2,WORLD-2);
-        dx=p.goalX-p.x; dz=p.goalZ-p.z;
-      }
-      const desired=Math.atan2(dx+avoid[i].x*4.2,dz+avoid[i].z*4.2);
-      p.heading += clamp(angleDiff(p.heading,desired),-dt*p.turnSpeed,dt*p.turnSpeed);
-      const moveScale=p.gesture==='crouch'?.22:(p.gesture==='jump'?.48:(p.gesture==='wave'?.58:1));
-      const crowdSlow=clamp(1-Math.hypot(avoid[i].x,avoid[i].z)*.23,.48,1);
-      const step=p.speed*speedMul*moveScale*crowdSlow*dt;
-      p.x+=Math.sin(p.heading)*step+avoid[i].x*dt*.34;
-      p.z+=Math.cos(p.heading)*step+avoid[i].z*dt*.34;
-      p.x=clamp(p.x,-WORLD+1,WORLD-1); p.z=clamp(p.z,-WORLD+1,WORLD-1);
-      p.walkPhase+=step*(5.6/p.height);
-      p.stride=Math.sin(p.walkPhase);
-      const glance=Math.sin(p.walkPhase*.28+p.id)*.055;
-      p.viewHeading=p.heading+(p.gesture==='spin'?p.gesturePhase*.62:glance);
-    }
+    return all;
   }
 
-  function buildCamera(pos, target, verticalFovDeg, viewportW, viewportH) {
-    const forward=normalize3({x:target.x-pos.x,y:target.y-pos.y,z:target.z-pos.z});
-    let right=normalize3(cross3(forward,{x:0,y:1,z:0}));
-    if(hypot3(right.x,right.y,right.z)<.01) right={x:1,y:0,z:0};
-    const up=normalize3(cross3(right,forward));
-    const focal=viewportH/(2*Math.tan((verticalFovDeg*Math.PI/180)/2));
-    return {pos,forward,right,up,focal,near:.06,viewportW,viewportH,verticalFovDeg};
+  function transformPoint(x,y,z) {
+    const dx=x-camera.x, dy=y-camera.y, dz=z-camera.z;
+    const sh=Math.sin(camera.heading), ch=Math.cos(camera.heading);
+    const x1=dx*ch-dz*sh;
+    const z1=dx*sh+dz*ch;
+    const sp=Math.sin(camera.pitch), cp=Math.cos(camera.pitch);
+    const y2=dy*cp-z1*sp;
+    const z2=dy*sp+z1*cp;
+    return {x:x1,y:y2,z:z2};
   }
 
-  function mainCamera(w,h) {
-    const c=state.camera,cp=Math.cos(c.pitch);
-    const pos={x:c.target.x+Math.sin(c.yaw)*cp*c.distance,y:c.target.y+Math.sin(c.pitch)*c.distance,z:c.target.z+Math.cos(c.yaw)*cp*c.distance};
-    return buildCamera(pos,{x:0,y:1.05,z:0},43,w,h);
-  }
-
-  function povCamera(person,w,h) {
-    const bob=Math.sin(person.walkPhase*2)*.012;
-    const jump=person.gesture==='jump'?Math.max(0,Math.sin(person.gesturePhase*Math.PI))*.34:0;
-    const crouch=person.gesture==='crouch'?person.height*.18:0;
-    const eyeHeight=person.height*.925;
-    const pos={x:person.x,y:eyeHeight+bob+jump-crouch,z:person.z};
-    const heading=person.viewHeading;
-    const target={x:pos.x+Math.sin(heading)*20,y:pos.y-.012,z:pos.z+Math.cos(heading)*20};
-    return buildCamera(pos,target,58,w,h);
-  }
-
-  function cameraSpace(cam,p) {
-    const r = {x:p.x-cam.pos.x,y:p.y-cam.pos.y,z:p.z-cam.pos.z};
-    return {x:dot3(r,cam.right),y:dot3(r,cam.up),z:dot3(r,cam.forward)};
-  }
-
-  function project(cam,p,w,h) {
-    const q = cameraSpace(cam,p);
-    if (q.z <= cam.near) return null;
-    return {x:w*.5+(q.x/q.z)*cam.focal, y:h*.5-(q.y/q.z)*cam.focal, z:q.z, scale:cam.focal/q.z};
-  }
-
-  function projectedLine(cam,a,b,w,h) {
-    let A = cameraSpace(cam,a), B = cameraSpace(cam,b);
-    const n = cam.near;
-    if (A.z <= n && B.z <= n) return null;
-    if (A.z <= n || B.z <= n) {
-      const front = A.z > n ? A : B;
-      const back = A.z > n ? B : A;
-      const t = (n-back.z)/(front.z-back.z);
-      const cut = {x:lerp(back.x,front.x,t),y:lerp(back.y,front.y,t),z:n};
-      if (A.z <= n) A = cut; else B = cut;
-    }
+  function project(x,y,z) {
+    const p=transformPoint(x,y,z);
+    if(p.z<18) return null;
     return {
-      a:{x:w*.5+(A.x/A.z)*cam.focal,y:h*.5-(A.y/A.z)*cam.focal,z:A.z},
-      b:{x:w*.5+(B.x/B.z)*cam.focal,y:h*.5-(B.y/B.z)*cam.focal,z:B.z}
+      x:W/2+p.x*focal/p.z,
+      y:H/2-p.y*focal/p.z,
+      z:p.z,
+      scale:focal/p.z
     };
   }
 
-  function drawFloor(ctx,cam,w,h,isPov) {
-    const far=1800;
-    const horizontal=normalize3({x:cam.forward.x,y:0,z:cam.forward.z});
-    const horizonPoint=project(cam,{x:cam.pos.x+horizontal.x*far,y:cam.pos.y,z:cam.pos.z+horizontal.z*far},w,h);
-    const horizon=clamp(horizonPoint?.y ?? h*.48,-h*.2,h*1.1);
-    const sky=ctx.createLinearGradient(0,0,0,Math.max(1,horizon));
-    sky.addColorStop(0,isPov?'#75add9':'#8eb7d7');
-    sky.addColorStop(1,isPov?'#d9e5e8':'#e3e8e5');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,w,Math.max(0,horizon));
-    const ground=ctx.createLinearGradient(0,horizon,0,h);
-    ground.addColorStop(0,'#8d9186'); ground.addColorStop(.42,'#777c72'); ground.addColorStop(1,'#555b53');
-    ctx.fillStyle=ground; ctx.fillRect(0,horizon,w,h-horizon);
+  function sky() {
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#5f9fdc");
+    g.addColorStop(.48,"#a9d6f4");
+    g.addColorStop(1,"#e7f5ff");
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
 
-    // Real perspective grid: every line is projected on the same 50 x 50 metre ground plane.
-    ctx.save(); ctx.lineWidth=1;
-    for(let v=-WORLD;v<=WORLD;v+=2.5){
-      const major=Math.abs(v%10)<.01;
-      ctx.strokeStyle=major?'rgba(239,240,230,.30)':'rgba(239,240,230,.13)';
-      const lines=[
-        projectedLine(cam,{x:v,y:.006,z:-WORLD},{x:v,y:.006,z:WORLD},w,h),
-        projectedLine(cam,{x:-WORLD,y:.006,z:v},{x:WORLD,y:.006,z:v},w,h)
-      ];
-      for(const line of lines) if(line){
-        ctx.beginPath(); ctx.moveTo(line.a.x,line.a.y); ctx.lineTo(line.b.x,line.b.y); ctx.stroke();
+    const sunX = W*.78 - Math.sin(camera.heading)*W*.18;
+    const sunY = H*.18 + camera.pitch*H*.3;
+    const rg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,Math.min(W,H)*.24);
+    rg.addColorStop(0,"rgba(255,250,210,.86)");
+    rg.addColorStop(.11,"rgba(255,244,183,.38)");
+    rg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+
+    const horizon = H/2 + camera.pitch*focal;
+    const haze=ctx.createLinearGradient(0,horizon-130,0,horizon+160);
+    haze.addColorStop(0,"rgba(255,255,255,0)");
+    haze.addColorStop(.5,"rgba(255,255,255,.18)");
+    haze.addColorStop(1,"rgba(255,255,255,.38)");
+    ctx.fillStyle=haze;ctx.fillRect(0,horizon-140,W,320);
+  }
+
+  function renderClouds(clouds) {
+    const items=[];
+    for(const cloud of clouds){
+      for(const l of cloud.lobes){
+        const p=project(l.x,l.y,l.z);
+        if(!p) continue;
+        const rr=l.r*p.scale;
+        if(rr<1.2 || rr>360 || p.x<-rr || p.x>W+rr || p.y<-rr || p.y>H+rr) continue;
+        items.push({p,l,cloud,rr});
       }
     }
-    ctx.strokeStyle='rgba(255,255,255,.52)'; ctx.lineWidth=2;
-    const edges=[
-      [{x:-WORLD,y:.01,z:-WORLD},{x:WORLD,y:.01,z:-WORLD}],
-      [{x:WORLD,y:.01,z:-WORLD},{x:WORLD,y:.01,z:WORLD}],
-      [{x:WORLD,y:.01,z:WORLD},{x:-WORLD,y:.01,z:WORLD}],
-      [{x:-WORLD,y:.01,z:WORLD},{x:-WORLD,y:.01,z:-WORLD}]
-    ];
-    edges.forEach(e=>{const line=projectedLine(cam,e[0],e[1],w,h);if(line){ctx.beginPath();ctx.moveTo(line.a.x,line.a.y);ctx.lineTo(line.b.x,line.b.y);ctx.stroke();}});
-    ctx.restore();
+    items.sort((a,b)=>b.p.z-a.p.z);
 
-    if(isPov){
-      const haze=ctx.createLinearGradient(0,horizon-20,0,horizon+70);
-      haze.addColorStop(0,'rgba(255,255,255,.12)'); haze.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.fillStyle=haze; ctx.fillRect(0,horizon-20,w,90);
+    for(const item of items){
+      const {p,l,rr}=item;
+      const fade=Math.max(0,Math.min(1,(MAX_DISTANCE-p.z)/(MAX_DISTANCE*.44)));
+      const alpha=l.a*fade;
+      const grad=ctx.createRadialGradient(p.x-rr*.22,p.y-rr*.26,rr*.08,p.x,p.y,rr);
+      grad.addColorStop(0,`rgba(255,255,255,${Math.min(.92,alpha*2.7)})`);
+      grad.addColorStop(.45,`rgba(${247-l.shade*2},${251-l.shade},255,${alpha*1.7})`);
+      grad.addColorStop(.78,`rgba(221,234,246,${alpha*.72})`);
+      grad.addColorStop(1,"rgba(205,225,242,0)");
+      ctx.fillStyle=grad;
+      ctx.beginPath();ctx.arc(p.x,p.y,rr,0,Math.PI*2);ctx.fill();
     }
   }
 
-  function shade(hex, amount) {
-    const c = hex.replace('#','');
-    const n = parseInt(c.length===3 ? c.split('').map(x=>x+x).join('') : c,16);
-    const r=clamp((n>>16)+amount,0,255), g=clamp(((n>>8)&255)+amount,0,255), b=clamp((n&255)+amount,0,255);
-    return `rgb(${r},${g},${b})`;
+  function nearestAimedCloud(clouds) {
+    let best=null;
+    for(const cloud of clouds){
+      const p=project(cloud.x,cloud.y,cloud.z);
+      if(!p || p.z>1900) continue;
+      const d=Math.hypot(p.x-W/2,p.y-H/2);
+      const apparent=Math.max(50,cloud.radius*p.scale*.58);
+      const normalized=d/apparent;
+      if(!best || normalized<best.normalized) best={cloud,p,d,normalized,apparent};
+    }
+    return best;
   }
 
-  function drawBoxObject(ctx,cam,w,h,obj,showLabel) {
-    const s=obj.size, y0=0, y1=obj.height;
-    const corners = [
-      {x:obj.x-s/2,y:y0,z:obj.z-s/2},{x:obj.x+s/2,y:y0,z:obj.z-s/2},
-      {x:obj.x+s/2,y:y0,z:obj.z+s/2},{x:obj.x-s/2,y:y0,z:obj.z+s/2},
-      {x:obj.x-s/2,y:y1,z:obj.z-s/2},{x:obj.x+s/2,y:y1,z:obj.z-s/2},
-      {x:obj.x+s/2,y:y1,z:obj.z+s/2},{x:obj.x-s/2,y:y1,z:obj.z+s/2}
-    ].map(p=>project(cam,p,w,h));
-    if (corners.filter(Boolean).length < 6) return;
-    const face = (ids,fill) => {
-      if (ids.some(i=>!corners[i])) return;
-      ctx.beginPath();ctx.moveTo(corners[ids[0]].x,corners[ids[0]].y);
-      ids.slice(1).forEach(i=>ctx.lineTo(corners[i].x,corners[i].y));
-      ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='rgba(0,0,0,.2)';ctx.stroke();
-    };
-    face([0,1,5,4],shade(obj.color,-25));
-    face([1,2,6,5],shade(obj.color,-8));
-    face([3,0,4,7],shade(obj.color,-40));
-    face([4,5,6,7],shade(obj.color,28));
-    if (showLabel && obj.label) {
-      const p = project(cam,{x:obj.x,y:obj.height+.7,z:obj.z},w,h);
-      if(p && p.z<90){
-        ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-        const tw=ctx.measureText(obj.label).width;
-        ctx.fillStyle='rgba(3,9,15,.78)';ctx.fillRect(p.x-tw/2-4,p.y-7,tw+8,14);
-        ctx.fillStyle='#fff';ctx.fillText(obj.label,p.x,p.y);
-      }
+  function update(dt) {
+    now += dt;
+    markCooldown = Math.max(0, markCooldown-dt);
+
+    const base=speedLevels[speedIndex];
+    let forward=0, strafe=0, vertical=0, turn=0;
+
+    if(autoPilot){
+      forward=1;
+      const targetTurn = Math.sin(now*.13)*.18 + Math.sin(now*.031)*.24;
+      camera.heading += targetTurn*dt*.22;
+      camera.pitch += ((-.04 + Math.sin(now*.11)*.045)-camera.pitch)*dt*.45;
+    } else {
+      forward=(keys["KeyW"]||keys["ArrowUp"]?1:0)-(keys["KeyS"]||keys["ArrowDown"]?1:0);
+      strafe=(keys["KeyD"]?1:0)-(keys["KeyA"]?1:0);
+      vertical=(keys["KeyR"]?1:0)-(keys["KeyF"]?1:0);
+      turn=(keys["KeyE"]||keys["ArrowRight"]?1:0)-(keys["KeyQ"]||keys["ArrowLeft"]?1:0);
+      camera.heading += turn*dt*1.1;
     }
+
+    const boost=keys["ShiftLeft"]||keys["ShiftRight"]?1.8:1;
+    const sh=Math.sin(camera.heading), ch=Math.cos(camera.heading);
+    const tx=(sh*forward + ch*strafe)*base*boost;
+    const tz=(ch*forward - sh*strafe)*base*boost;
+    const ty=vertical*base*.55;
+    const smooth=1-Math.pow(.0008,dt);
+    camera.vx += (tx-camera.vx)*smooth;
+    camera.vz += (tz-camera.vz)*smooth;
+    camera.vy += (ty-camera.vy)*smooth;
+    camera.x += camera.vx*dt;
+    camera.z += camera.vz*dt;
+    camera.y += camera.vy*dt;
+    camera.y=Math.max(-80,Math.min(520,camera.y));
+    camera.pitch=Math.max(-.55,Math.min(.48,camera.pitch));
   }
 
-  function drawLandmark(ctx,cam,w,h,obj,showLabel) {
-    if (obj.type==='pillar' || obj.type==='stage') {
-      drawBoxObject(ctx,cam,w,h,obj,showLabel);
-      return;
-    }
-    if (obj.type==='fountain') {
-      const base=project(cam,{x:obj.x,y:0,z:obj.z},w,h);
-      const top=project(cam,{x:obj.x,y:obj.height,z:obj.z},w,h);
-      if(!base||!top)return;
-      const r=clamp(obj.size*base.scale,3,160);
-      ctx.fillStyle='rgba(12,84,130,.65)';ctx.beginPath();ctx.ellipse(base.x,base.y,r,r*.34,0,0,TAU);ctx.fill();
-      ctx.strokeStyle='#88dcff';ctx.lineWidth=Math.max(1,r*.08);ctx.stroke();
-      ctx.strokeStyle='#50c8ff';ctx.lineWidth=Math.max(1,r*.12);ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(top.x,top.y);ctx.stroke();
-      ctx.fillStyle='#eafaff';ctx.beginPath();ctx.arc(top.x,top.y,Math.max(2,r*.12),0,TAU);ctx.fill();
-      if(showLabel){ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('FONTANA',top.x,top.y-10);}
-      return;
-    }
-    if (obj.type==='tree') {
-      const base=project(cam,{x:obj.x,y:0,z:obj.z},w,h);
-      const trunkTop=project(cam,{x:obj.x,y:obj.height*.55,z:obj.z},w,h);
-      const crown=project(cam,{x:obj.x,y:obj.height*.82,z:obj.z},w,h);
-      if(!base||!trunkTop||!crown)return;
-      const r=clamp(obj.size*crown.scale,3,100);
-      ctx.strokeStyle='#714a2d';ctx.lineWidth=clamp(r*.22,2,14);ctx.beginPath();ctx.moveTo(base.x,base.y);ctx.lineTo(trunkTop.x,trunkTop.y);ctx.stroke();
-      ctx.fillStyle='#1f8b56';ctx.beginPath();ctx.arc(crown.x,crown.y,r*.72,0,TAU);ctx.fill();
-      ctx.fillStyle='#36b96f';ctx.beginPath();ctx.arc(crown.x-r*.28,crown.y+r*.02,r*.46,0,TAU);ctx.fill();
-      return;
-    }
-    if (obj.type==='bench') {
-      const p=project(cam,{x:obj.x,y:.55,z:obj.z},w,h);
-      if(!p)return;
-      const ww=clamp(obj.size*p.scale,3,80), hh=clamp(.6*p.scale,2,25);
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(-obj.heading*.12);ctx.fillStyle=obj.color;ctx.fillRect(-ww/2,-hh,ww,hh);ctx.fillStyle='#6f472d';ctx.fillRect(-ww*.4,0,4,hh);ctx.fillRect(ww*.4-4,0,4,hh);ctx.restore();
-      return;
-    }
-    if (obj.type==='arch') {
-      const left={...obj,x:obj.x-obj.size*.38,size:.65,height:obj.height};
-      const right={...obj,x:obj.x+obj.size*.38,size:.65,height:obj.height};
-      if (Math.abs(obj.x)>20) { left.x=obj.x;right.x=obj.x;left.z=obj.z-obj.size*.38;right.z=obj.z+obj.size*.38; }
-      drawBoxObject(ctx,cam,w,h,left,false);drawBoxObject(ctx,cam,w,h,right,false);
-      const top={...obj,x:(left.x+right.x)/2,z:(left.z+right.z)/2,size:obj.size*.92,height:.7};
-      const saved=top.height; top.height=obj.height; // custom top rendered as narrow box at altitude via manual line
-      const a=project(cam,{x:left.x,y:obj.height,z:left.z},w,h), b=project(cam,{x:right.x,y:obj.height,z:right.z},w,h);
-      if(a&&b){ctx.strokeStyle=obj.color;ctx.lineWidth=clamp(.7*((a.scale+b.scale)/2),3,18);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
-      if(showLabel&&obj.label){const q=project(cam,{x:obj.x,y:obj.height+1,z:obj.z},w,h);if(q){ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(obj.label,q.x,q.y);}}
-    }
+  let currentClouds=[];
+  function render() {
+    sky();
+    currentClouds=activeClouds();
+    renderClouds(currentClouds);
+    const aimed=nearestAimedCloud(currentClouds);
+    ui.reticle.classList.toggle("lock", !!aimed && aimed.normalized<.86);
+    updateUI();
   }
 
-  function poseFor(p) {
-    const h=p.viewHeading||p.heading;
-    const side={x:Math.cos(h),z:-Math.sin(h)},fwd={x:Math.sin(h),z:Math.cos(h)};
-    const H=p.height;
-    const jump=p.gesture==='jump'?Math.max(0,Math.sin(p.gesturePhase*Math.PI))*H*.18:0;
-    const crouch=p.gesture==='crouch'?H*.18:0;
-    const baseY=jump, hipY=H*.47-crouch+baseY, shoulderY=H*.76-crouch+baseY, headY=H*.93-crouch+baseY;
-    const shoulder=H*.125*p.shoulderScale, hip=H*.065*p.bodyScale, stride=p.stride*H*.105;
-    const P=(sx,y,sz)=>({x:p.x+sx,y,z:p.z+sz});
-    const hipL=P(side.x*hip,hipY,side.z*hip),hipR=P(-side.x*hip,hipY,-side.z*hip);
-    const shoulderL=P(side.x*shoulder,shoulderY,side.z*shoulder),shoulderR=P(-side.x*shoulder,shoulderY,-side.z*shoulder);
-    const footL=P(side.x*hip+fwd.x*stride,baseY,side.z*hip+fwd.z*stride);
-    const footR=P(-side.x*hip-fwd.x*stride,baseY,-side.z*hip-fwd.z*stride);
-    let handL=P(side.x*H*.22+fwd.x*(-stride*.42),H*.50-crouch+baseY,side.z*H*.22+fwd.z*(-stride*.42));
-    let handR=P(-side.x*H*.22+fwd.x*(stride*.42),H*.50-crouch+baseY,-side.z*H*.22+fwd.z*(stride*.42));
-    if(p.gesture==='wave') handR=P(-side.x*H*.24+fwd.x*.04,H*.96+Math.sin(p.gesturePhase*5)*H*.05+baseY,-side.z*H*.24+fwd.z*.04);
-    return {baseY,hipL,hipR,shoulderL,shoulderR,footL,footR,handL,handR,head:P(0,headY,0),torso:P(0,H*.61-crouch+baseY,0),neck:P(0,H*.83-crouch+baseY,0)};
+  function updateUI(){
+    const realSpeed=Math.hypot(camera.vx,camera.vz);
+    ui.speed.textContent=Math.round(realSpeed);
+    ui.mode.textContent=autoPilot?"AUTO":"MAN";
+    ui.score.textContent=score;
+    ui.seen.textContent=sectorsSeen.size;
+    const deg=((camera.heading*180/Math.PI)%360+360)%360;
+    const dirs=["N","NE","E","SE","S","SO","O","NO"];
+    const dir=dirs[Math.round(deg/45)%8];
+    ui.compass.textContent=`${dir} · ${String(Math.round(deg)).padStart(3,"0")}° · X ${Math.round(camera.x)} · Z ${Math.round(camera.z)}`;
+    ui.autoBtn.classList.toggle("active",autoPilot);
+    ui.autoBtn.textContent=autoPilot?"Autopilota attivo":"Autopilota";
+    ui.speedBtn.textContent=`Velocità ×${speedIndex+1}`;
   }
 
-  function drawPerson(ctx,cam,w,h,p,showId,isMain) {
-    const pose=poseFor(p),pts={};
-    for(const [k,v] of Object.entries(pose)) if(typeof v==='object') pts[k]=project(cam,v,w,h);
-    if(!pts.head||!pts.torso||!pts.footL||!pts.footR||!pts.shoulderL||!pts.shoulderR||!pts.hipL||!pts.hipR)return null;
-    const groundY=(pts.footL.y+pts.footR.y)/2;
-    const height=Math.abs(groundY-pts.head.y);
-    if(height<2||height>900)return null;
-    const depth=pts.torso.z;
-    const atmospheric=clamp(1-Math.max(0,depth-38)/95,.42,1);
-    const line=clamp(height*.105,1.15,16),headR=clamp(height*.105,1.5,19);
-    const foot=project(cam,{x:p.x,y:.012,z:p.z},w,h);
-    const shadowTip=project(cam,{x:p.x+.48,y:.012,z:p.z+.34},w,h);
-
-    ctx.save();
-    ctx.globalAlpha=atmospheric;
-    if(foot){
-      const shadowAngle=shadowTip?Math.atan2(shadowTip.y-foot.y,shadowTip.x-foot.x):0;
-      ctx.save();ctx.translate(foot.x,foot.y);ctx.rotate(shadowAngle);
-      ctx.fillStyle=`rgba(10,14,16,${clamp(.30-depth*.002,.10,.28)})`;
-      ctx.beginPath();ctx.ellipse(headR*.35,0,headR*1.55,headR*.34,0,0,TAU);ctx.fill();ctx.restore();
-    }
-
-    const limb=(a,b,color,width=line*.50)=>{
-      if(!a||!b)return;
-      ctx.strokeStyle='rgba(20,24,28,.22)';ctx.lineWidth=width+Math.max(1,width*.18);ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(a.x+width*.08,a.y+width*.08);ctx.lineTo(b.x+width*.08,b.y+width*.08);ctx.stroke();
-      ctx.strokeStyle=color;ctx.lineWidth=width;
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    };
-    const mid=(a,b,t=.52)=>({x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),z:lerp(a.z,b.z,t)});
-
-    // Legs and shoes.
-    limb(pts.hipL,pts.footL,shade(p.pants,-10),line*.58);
-    limb(pts.hipR,pts.footR,p.pants,line*.58);
-    const shoeLen=Math.max(2,line*.82);
-    ctx.strokeStyle=p.shoes;ctx.lineCap='round';ctx.lineWidth=Math.max(1.5,line*.42);
-    for(const fp of [pts.footL,pts.footR]){ctx.beginPath();ctx.moveTo(fp.x-shoeLen*.18,fp.y);ctx.lineTo(fp.x+shoeLen*.58,fp.y+shoeLen*.08);ctx.stroke();}
-
-    // Torso as a projected quadrilateral, keeping shoulder and hip proportions in perspective.
-    ctx.beginPath();ctx.moveTo(pts.shoulderL.x,pts.shoulderL.y);ctx.lineTo(pts.shoulderR.x,pts.shoulderR.y);
-    ctx.lineTo(pts.hipR.x,pts.hipR.y);ctx.lineTo(pts.hipL.x,pts.hipL.y);ctx.closePath();
-    ctx.fillStyle=p.shirt;ctx.fill();ctx.strokeStyle='rgba(18,24,30,.34)';ctx.lineWidth=Math.max(1,line*.09);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(pts.shoulderR.x,pts.shoulderR.y);ctx.lineTo(pts.hipR.x,pts.hipR.y);ctx.lineTo(pts.hipL.x,pts.hipL.y);ctx.closePath();
-    ctx.fillStyle='rgba(0,0,0,.10)';ctx.fill();
-
-    // Sleeves, forearms and hands.
-    for(const [shoulder,hand] of [[pts.shoulderL,pts.handL],[pts.shoulderR,pts.handR]]){
-      if(!shoulder||!hand)continue;
-      const elbow=mid(shoulder,hand,.47);
-      limb(shoulder,elbow,shade(p.shirt,-5),line*.52);
-      limb(elbow,hand,p.skin,line*.35);
-      ctx.fillStyle=p.skin;ctx.beginPath();ctx.arc(hand.x,hand.y,Math.max(1.1,line*.22),0,TAU);ctx.fill();
-    }
-
-    // Neck and head.
-    if(pts.neck) limb(pts.neck,pts.head,p.skin,line*.38);
-    const faceGrad=ctx.createRadialGradient(pts.head.x-headR*.28,pts.head.y-headR*.35,headR*.12,pts.head.x,pts.head.y,headR);
-    faceGrad.addColorStop(0,shade(p.skin,20));faceGrad.addColorStop(1,shade(p.skin,-7));
-    ctx.fillStyle=faceGrad;ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y,headR*.86,headR,0,0,TAU);ctx.fill();
-    ctx.strokeStyle='rgba(0,0,0,.28)';ctx.lineWidth=Math.max(1,headR*.09);ctx.stroke();
-
-    // Projected gaze direction gives faces a readable orientation.
-    const fh=p.viewHeading||p.heading;
-    const noseWorld={x:p.x+Math.sin(fh)*p.height*.075,y:pose.head.y,z:p.z+Math.cos(fh)*p.height*.075};
-    const nose=project(cam,noseWorld,w,h);
-    if(nose){
-      const vx=nose.x-pts.head.x,vy=nose.y-pts.head.y,vl=Math.hypot(vx,vy)||1;
-      const nx=vx/vl,ny=vy/vl,sideX=-ny,sideY=nx;
-      const facing=clamp(vl/(headR*.95),0,1);
-      ctx.strokeStyle='rgba(55,34,28,.72)';ctx.lineWidth=Math.max(1,headR*.075);ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(pts.head.x+nx*headR*.05,pts.head.y+ny*headR*.05);ctx.lineTo(pts.head.x+nx*headR*.58,pts.head.y+ny*headR*.58);ctx.stroke();
-      if(headR>4){
-        ctx.fillStyle='rgba(35,30,28,.78)';
-        for(const sgn of [-1,1]){ctx.beginPath();ctx.arc(pts.head.x+nx*headR*.18+sideX*headR*.25*sgn*facing,pts.head.y+ny*headR*.18+sideY*headR*.25*sgn*facing,Math.max(.7,headR*.055),0,TAU);ctx.fill();}
-      }
-    }
-
-    // Hair volume follows the skull rather than floating above it.
-    ctx.fillStyle=p.hair;
-    if(p.hairStyle===0){ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.28,headR*.88,Math.PI,TAU);ctx.fill();}
-    else if(p.hairStyle===1){ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*.30,headR*.90,headR*.61,0,Math.PI,TAU);ctx.fill();}
-    else if(p.hairStyle===2){ctx.beginPath();ctx.roundRect(pts.head.x-headR*.78,pts.head.y-headR*.96,headR*1.56,headR*.59,headR*.18);ctx.fill();}
-    else {ctx.beginPath();ctx.arc(pts.head.x-headR*.34,pts.head.y-headR*.61,headR*.49,0,TAU);ctx.arc(pts.head.x+headR*.34,pts.head.y-headR*.61,headR*.49,0,TAU);ctx.fill();}
-
-    ctx.fillStyle=p.hatColor;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=Math.max(1,headR*.1);
-    if(p.hat==='cap'){
-      ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.55,headR*.88,Math.PI,TAU);ctx.fill();
-      ctx.fillRect(pts.head.x,pts.head.y-headR*.64,headR*1.25,headR*.2);
-    }else if(p.hat==='beanie'){
-      ctx.beginPath();ctx.arc(pts.head.x,pts.head.y-headR*.48,headR*.82,Math.PI,TAU);ctx.lineTo(pts.head.x+headR*.82,pts.head.y-headR*.38);ctx.lineTo(pts.head.x-headR*.82,pts.head.y-headR*.38);ctx.closePath();ctx.fill();
-      ctx.fillRect(pts.head.x-headR*.84,pts.head.y-headR*.48,headR*1.68,headR*.20);
-    }else if(p.hat==='brim'){
-      ctx.beginPath();ctx.ellipse(pts.head.x,pts.head.y-headR*.72,headR*1.18,headR*.24,0,0,TAU);ctx.fill();
-      ctx.fillRect(pts.head.x-headR*.58,pts.head.y-headR*1.42,headR*1.16,headR*.70);
-    }
-
-    if(showId){
-      const y=pts.head.y-headR*2.35,label=String(p.id);
-      ctx.globalAlpha=1;ctx.font=`900 ${clamp(height*.12,9,16)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';
-      const tw=ctx.measureText(label).width;
-      const bg=p.solved?'rgba(29,140,84,.94)':'rgba(3,9,15,.86)';
-      ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(pts.head.x-tw/2-5,y-8,tw+10,16,7);ctx.fill();
-      ctx.fillStyle=p.solved?'#bfffd8':'#fff';ctx.fillText(label,pts.head.x,y+.2);
-      if(p.solved){ctx.strokeStyle='#49e38b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(pts.head.x,pts.head.y,headR*1.65,0,TAU);ctx.stroke();}
-    }
-    ctx.restore();
-    return {x:pts.torso.x,y:pts.torso.y,r:Math.max(10,height*.34),depth,id:p.id};
+  function showToast(text, success=false){
+    ui.toast.textContent=text;
+    ui.toast.style.color=success?"var(--ok)":"var(--text)";
+    ui.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1600);
   }
 
-  function renderMain() {
-    const {w,h}=resizeCanvas(mainCanvas,mainCtx);
-    const cam=mainCamera(w,h);
-    drawFloor(mainCtx,cam,w,h,false);
-
-    const drawables=[];
-    for(const obj of state.landmarks){
-      const q=cameraSpace(cam,{x:obj.x,y:obj.height*.5,z:obj.z});
-      if(q.z>cam.near)drawables.push({depth:q.z,type:'landmark',obj});
-    }
-    for(const p of state.people){
-      const q=cameraSpace(cam,{x:p.x,y:1,z:p.z});
-      if(q.z>cam.near)drawables.push({depth:q.z,type:'person',obj:p});
-    }
-    drawables.sort((a,b)=>b.depth-a.depth);
-    state.picks=[];
-    for(const d of drawables){
-      if(d.type==='landmark') drawLandmark(mainCtx,cam,w,h,d.obj,true);
-      else {
-        const pick=drawPerson(mainCtx,cam,w,h,d.obj,true,true);
-        if(pick)state.picks.push(pick);
-      }
-    }
-
-    // Compass / camera orientation.
-    mainCtx.save();
-    mainCtx.translate(w-42,44);
-    mainCtx.fillStyle='rgba(3,9,15,.72)';mainCtx.beginPath();mainCtx.arc(0,0,27,0,TAU);mainCtx.fill();
-    mainCtx.strokeStyle='rgba(255,255,255,.3)';mainCtx.stroke();
-    mainCtx.rotate(-state.camera.yaw);
-    mainCtx.fillStyle='#ff5d75';mainCtx.beginPath();mainCtx.moveTo(0,-19);mainCtx.lineTo(-6,5);mainCtx.lineTo(6,5);mainCtx.closePath();mainCtx.fill();
-    mainCtx.restore();
-    mainCtx.fillStyle='#fff';mainCtx.font='800 10px system-ui';mainCtx.textAlign='center';mainCtx.fillText('N',w-42,20);
-  }
-
-  function renderPovPanel(panel,index) {
-    if(index>=state.povCount || panel.targetId<1)return;
-    const {w,h}=resizeCanvas(panel.canvas,panel.ctx);
-    const ctx=panel.ctx;
-    const person=state.people[panel.targetId-1];
-    const cam=povCamera(person,w,h);
-    drawFloor(ctx,cam,w,h,true);
-
-    const drawables=[];
-    for(const obj of state.landmarks){
-      const q=cameraSpace(cam,{x:obj.x,y:obj.height*.5,z:obj.z});
-      if(q.z>cam.near && q.z<75)drawables.push({depth:q.z,type:'landmark',obj});
-    }
-    for(const p of state.people){
-      if(p.id===person.id)continue;
-      const q=cameraSpace(cam,{x:p.x,y:1,z:p.z});
-      if(q.z>cam.near && q.z<65)drawables.push({depth:q.z,type:'person',obj:p});
-    }
-    drawables.sort((a,b)=>b.depth-a.depth);
-    for(const d of drawables){
-      if(d.type==='landmark')drawLandmark(ctx,cam,w,h,d.obj,true);
-      else drawPerson(ctx,cam,w,h,d.obj,false,false);
-    }
-
-    // Subtle peripheral falloff approximates human peripheral vision while preserving geometry.
-    const vignette=ctx.createRadialGradient(w/2,h*.48,Math.min(w,h)*.28,w/2,h*.48,Math.max(w,h)*.78);
-    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(.72,'rgba(0,0,0,.03)');vignette.addColorStop(1,'rgba(0,0,0,.34)');
-    ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
-    if(panel.solved){
-      ctx.fillStyle='rgba(20,95,56,.26)';ctx.fillRect(0,0,w,h);
-      ctx.fillStyle='#d5ffe5';ctx.font=`900 ${Math.max(16,w*.06)}px system-ui`;ctx.textAlign='center';ctx.fillText(`PERSONA ${panel.targetId}`,w/2,h/2);
+  function markVision(){
+    if(markCooldown>0) return;
+    markCooldown=1;
+    const aimed=nearestAimedCloud(currentClouds);
+    if(aimed && aimed.normalized<.9){
+      const precision=Math.max(0,1-aimed.normalized);
+      const gain=Math.round(80+precision*170);
+      score+=gain;
+      const poetic = [
+        `una ${aimed.cloud.type}`,
+        `il profilo di una ${aimed.cloud.type}`,
+        `una presenza simile a ${aimed.cloud.type}`,
+        `una forma da ${aimed.cloud.type}`
+      ][Math.floor(Math.random()*4)];
+      showToast(`Pareidolia registrata: ${poetic} · +${gain}`,true);
+      const entry=document.createElement("div");
+      entry.className="entry";
+      entry.innerHTML=`<strong>${aimed.cloud.type}</strong> · X ${Math.round(aimed.cloud.x)} / Z ${Math.round(aimed.cloud.z)} · +${gain}`;
+      ui.entries.prepend(entry);
+      while(ui.entries.children.length>5) ui.entries.lastElementChild.remove();
+    } else {
+      showToast("Inquadra meglio un cumulo");
     }
   }
 
-  function tick(now) {
-    let dt=Math.min(.05,(now-state.lastTime)/1000 || 0);
-    state.lastTime=now;
-    if(!state.frozen){
-      updatePeople(dt);
-      state.roundSeconds += dt;
-    }
-    if(state.messageTimer>0 && state.messageTimer<90000){
-      state.messageTimer-=dt*1000;
-      if(state.messageTimer<=0 && panels.slice(0,state.povCount).some(p=>!p.solved)){
-        showMessage(state.selectedPanel>=0 ? `POV ${panelLetters[state.selectedPanel]} selezionato: scegli la persona.` : 'Seleziona un riquadro POV, poi clicca una persona numerata.', '', 100000);
-      }
-    }
-    updateHud();
-    renderMain();
-    panels.forEach(renderPovPanel);
-    if (!TEST_MODE) requestAnimationFrame(tick);
+  function toggleAuto(){
+    autoPilot=!autoPilot;
+    if(autoPilot) showToast(`Autopilota inserito · velocità ×${speedIndex+1}`,true);
   }
 
-  mainCanvas.addEventListener('pointerdown', e=>{
-    ensureAudio();
-    state.drag.active=true;state.drag.moved=false;state.drag.x=e.clientX;state.drag.y=e.clientY;
-    mainCanvas.setPointerCapture(e.pointerId);mainCanvas.classList.add('dragging');
-  });
-  mainCanvas.addEventListener('pointermove', e=>{
-    if(!state.drag.active)return;
-    const dx=e.clientX-state.drag.x,dy=e.clientY-state.drag.y;
-    if(Math.hypot(dx,dy)>2)state.drag.moved=true;
-    state.camera.yaw-=dx*.006;
-    state.camera.pitch=clamp(state.camera.pitch+dy*.004,.25,1.18);
-    state.drag.x=e.clientX;state.drag.y=e.clientY;
-  });
-  mainCanvas.addEventListener('pointerup', e=>{
-    if(!state.drag.active)return;
-    if(!state.drag.moved){
-      const rect=mainCanvas.getBoundingClientRect();
-      const x=e.clientX-rect.left,y=e.clientY-rect.top;
-      let best=null,bestD=Infinity;
-      for(const p of state.picks){
-        const d=Math.hypot(x-p.x,y-p.y);
-        if(d<p.r && d<bestD){best=p;bestD=d;}
-      }
-      if(best)identifyPerson(best.id);
+  function cycleSpeed(){
+    speedIndex=(speedIndex+1)%speedLevels.length;
+    showToast(`Velocità impostata: ×${speedIndex+1}`);
+  }
+
+  addEventListener("keydown",e=>{
+    keys[e.code]=true;
+    if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)) e.preventDefault();
+    if(e.repeat) return;
+    if(e.code==="Space") markVision();
+    if(e.code==="KeyP") toggleAuto();
+    if(/^Digit[1-4]$/.test(e.code)){
+      speedIndex=Number(e.code.slice(-1))-1;
+      showToast(`Velocità impostata: ×${speedIndex+1}`);
     }
-    state.drag.active=false;mainCanvas.classList.remove('dragging');
-  });
-  mainCanvas.addEventListener('pointercancel',()=>{state.drag.active=false;mainCanvas.classList.remove('dragging');});
-  mainCanvas.addEventListener('wheel',e=>{
-    e.preventDefault();state.camera.distance=clamp(state.camera.distance+e.deltaY*.025,28,72);
   },{passive:false});
+  addEventListener("keyup",e=>keys[e.code]=false);
 
-  freezeBtn.addEventListener('click',()=>{
-    ensureAudio();
-    state.frozen=!state.frozen;
-    freezeBtn.textContent=state.frozen?'Riavvia scena':'Blocca scena';
-    showMessage(state.frozen?'Scena bloccata: confronta con calma le visuali.':'Movimento riavviato.','');
+  canvas.addEventListener("pointerdown",e=>{
+    pointerDown=true;pointerX=e.clientX;pointerY=e.clientY;
+    canvas.setPointerCapture?.(e.pointerId);
   });
-  newRoundBtn.addEventListener('click',()=>{ensureAudio();startRound();});
-  povCountSelect.addEventListener('change',()=>{
-    state.povCount=clamp(Number(povCountSelect.value),3,Math.min(6,state.people.length));
-    setupPovCount.value=String(state.povCount);
-    startRound();
+  canvas.addEventListener("pointermove",e=>{
+    if(!pointerDown) return;
+    const dx=e.clientX-pointerX, dy=e.clientY-pointerY;
+    pointerX=e.clientX;pointerY=e.clientY;
+    camera.heading += dx*.0042;
+    camera.pitch -= dy*.0034;
+    camera.pitch=Math.max(-.55,Math.min(.48,camera.pitch));
   });
-  peopleCountInput.addEventListener('change',()=>{
-    applyGameSettings(peopleCountInput.value,state.povCount,state.speedMultiplier);
-  });
-  difficultySelect.addEventListener('change',()=>{
-    state.speedMultiplier=Number(difficultySelect.value);
-    setupDifficulty.value=String(state.speedMultiplier);
-    showMessage(`Velocità impostata: ${difficultySelect.options[difficultySelect.selectedIndex].text}.`,'');
-  });
-  settingsBtn.addEventListener('click',()=>{
-    setupPeopleCount.value=String(state.peopleCount); setupPovCount.value=String(state.povCount); setupDifficulty.value=String(state.speedMultiplier);
-    setupOverlay.classList.remove('hidden');
-  });
-  startGameBtn.addEventListener('click',()=>{
-    applyGameSettings(setupPeopleCount.value,setupPovCount.value,setupDifficulty.value);
-    setupOverlay.classList.add('hidden');
+  canvas.addEventListener("pointerup",()=>pointerDown=false);
+  canvas.addEventListener("pointercancel",()=>pointerDown=false);
+
+  ui.autoBtn.addEventListener("click",toggleAuto);
+  ui.speedBtn.addEventListener("click",cycleSpeed);
+  ui.markBtn.addEventListener("click",markVision);
+  ui.start.addEventListener("click",()=>{
+    ui.intro.style.display="none";
+    running=true;
+    autoPilot=true;
+    last=performance.now();
+    requestAnimationFrame(loop);
   });
 
-  state.landmarks=createLandmarks();
-  applyGameSettings(50,6,1);
-  requestAnimationFrame(tick);
+  function loop(t){
+    if(!running) return;
+    const dt=Math.min(.045,(t-last)/1000||0);
+    last=t;
+    update(dt);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  render();
 })();
 </script>
 </body>
